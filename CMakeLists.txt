@@ -46,4 +46,17 @@ target_compile_definitions( quickjs
 )
 target_link_libraries( ${PROJECT_NAME} PUBLIC quickjs )
 
+set(GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR})
+set(PYTHON3 python)
+set(BUNDLED_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/Bravura.otf
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/vexflow-debug.js.js
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vexflow_wrap.js
+)
+add_custom_command(
+   OUTPUT ${GENERATED_DIR}/bundle.h
+   COMMAND ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/tools/bundle_files.py --out ${GENERATED_DIR}/bundle.h ${BUNDLED_FILES}
+   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tools/bundle_files.py ${BUNDLED_FILES}
+)
+
 add_subdirectory( src )
