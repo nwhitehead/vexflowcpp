@@ -20,6 +20,6 @@ public:
     // Eval JavaScript code
     void eval(std::string code, std::string source_filename);
 
-    // Get JSON string from environment
-    std::string get(std::string name);
+    // Save graphical output
+    void save(std::string filename);
 };

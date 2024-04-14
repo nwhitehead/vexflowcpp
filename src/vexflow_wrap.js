@@ -1,4 +1,8 @@
 
+cpp_print(57424);
+cpp_draw_character(57424, 0, 100);
+//cpp_draw_line(0, 0, 100, 100)
+
 function assert(value) {
     if (!value) {
         throw new Exception("Assertion failed");
@@ -158,5 +162,3 @@ system
     .addTimeSignature('4/4');
 
 vf.draw();
-
-globalThis.__result = canvas.getContext().getOutput();
