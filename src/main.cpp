@@ -19,8 +19,6 @@ std::string read_file(std::string filename) {
     return buf.str();
 }
 
-unsigned char ttf_buffer[1<<25];
-
 class Canvas {
 private:
     // Dimensions of canvas in pixels
@@ -33,6 +31,24 @@ public:
     Canvas(int width_p, int height_p) : width(width_p), height(height_p), data(width * height) {
     }
     ~Canvas() {}
+    inline int index(int x, int y) {
+        return x + width * y;
+    }
+    inline void set(int x, int y, uint8_t value) {
+        if (x >= 0 && x < width && y >= 0 && y < height) {
+            data[index(x, y)] = value;
+        }
+    }
+    void blit(int x, int y, uint8_t *src, int w, int h) {
+        for (int i = 0; i < h; i++) {
+            for (int j = 0; j < w; j++) {
+                set(x + j, y + i, src[j + i * w]);
+            }
+        }
+    }
+    void save(std::string filename) {
+        stbi_write_png(filename.c_str(), width, height, 1, data.data(), width);
+    }
 };
 
 class Renderer {
@@ -51,29 +67,25 @@ public:
         size = 43.0f;
         scale_height = stbtt_ScaleForPixelHeight(&font, size);
     }
+    ~Renderer() {
+    }
+    void drawCharacter(int x, int y, int character) {
+        int w, h, xoff, yoff;
+        unsigned char *bitmap = stbtt_GetCodepointBitmap(&font, 0, scale_height, character, &w, &h, &xoff, &yoff);
+        canvas.blit(x, y, bitmap, w, h);
+        std::free(bitmap);
+    }
+    Canvas &get_canvas() {
+        return canvas;
+    }
 };
 
 int main(int argc, char *argv[]) {
     std::cout << "Offline C++ VexFlow render" << std::endl;
 
-    Canvas canvas{800, 600};
-    std::string font_data = read_file("../external/Bravura.otf");
-    stbtt_fontinfo font;
-    unsigned char *font_data_p = reinterpret_cast<unsigned char *>(font_data.data());
-    int success = stbtt_InitFont(&font, font_data_p, stbtt_GetFontOffsetForIndex(font_data_p, 0));
-    if (!success) {
-        std::cerr << "stbtt_InitFont returned failure" << std::endl;
-        abort();
-    }
-
-    float scale_height = stbtt_ScaleForPixelHeight(&font, 43);
-
-    std::cout << "scale_height=" << scale_height << std::endl;
+    Renderer renderer{};
     int c = 0xE050; // G clef
-    int w, h;
-    unsigned char *bitmap = stbtt_GetCodepointBitmap(&font, 0, scale_height, c, &w, &h, nullptr, nullptr);
-
-    stbi_write_png("out.png", w, h, 1, bitmap, w);
-
+    renderer.drawCharacter(0, 0, c);
+    renderer.get_canvas().save("out.png");
     return EXIT_SUCCESS;
 }
