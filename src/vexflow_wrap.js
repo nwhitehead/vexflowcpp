@@ -31,7 +31,8 @@ globalThis.document = {
                     return {
                         measureText(txt) {
                             //print(`measureText(${txt}) len=${txt.length} font=${this.font}`);
-                            let res = cpp_measure_text(txt, this.font);
+                            let res = cpp_measure_text(txt.codePointAt(0) || 0, this.font);
+                            print(JSON.stringify(res));
                             return {
                                 width: 20,
                                 actualBoundingBoxLeft: 20,

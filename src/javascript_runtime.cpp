@@ -39,10 +39,16 @@ public:
             data[index(x, y)] = value;
         }
     }
+    inline void blend(int x, int y, uint8_t value) {
+        if (x >= 0 && x < width && y >= 0 && y < height) {
+            data[index(x, y)] = std::min(255, data[index(x, y)] + value);
+        }
+    }
     void blit(int x, int y, uint8_t *src, int w, int h) {
         for (int i = 0; i < h; i++) {
             for (int j = 0; j < w; j++) {
-                set(x + j, y + i, src[j + i * w]);
+                int value = src[j + i * w];
+                    blend(x + j, y + i, value);
             }
         }
     }
@@ -96,6 +102,16 @@ public:
     }
 };
 
+struct CodepointMetrics {
+    double width;
+    double actualBoundingBoxLeft;
+    double actualBoundingBoxRight;
+    double fontBoundingBoxAscent;
+    double fontBoundingBoxDescent;
+    double actualBoundingBoxAscent;
+    double actualBoundingBoxDescent;
+};
+
 class Renderer {
 private:
     Canvas canvas;
@@ -117,8 +133,13 @@ public:
     void draw_character(int x, int y, int character) {
         int w, h, xoff, yoff;
         unsigned char *bitmap = stbtt_GetCodepointBitmap(&font, 0, scale_height, character, &w, &h, &xoff, &yoff);
-        canvas.blit(x, y, bitmap, w, h);
+        canvas.blit(x + xoff, y + yoff, bitmap, w, h);
         std::free(bitmap);
+    }
+    CodepointMetrics measure_character(int character) {
+        CodepointMetrics result;
+        result.width = 20;
+        return result;
     }
     Canvas &get_canvas() {
         return canvas;
@@ -201,10 +222,13 @@ JSValue cpp_fill_rect(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSVal
 
 JSValue cpp_measure_text(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
     assert(argc == 2);
-    std::string txt{get_string(ctx, argv[0])};
+    int character = get_int32(ctx, argv[0]);
     std::string font{get_string(ctx, argv[1])};
-    std::cout << "cpp_measure_text(" << txt << ", " << font << ")" << std::endl;
-    return JS_UNDEFINED;
+    std::cout << "cpp_measure_text(" << character << ", " << font << ")" << std::endl;
+    CodepointMetrics metrics = renderer.measure_character(character);
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "width", JS_NewFloat64(ctx, metrics.width));
+    return result;
 }
 
 JavaScriptRuntime::JavaScriptRuntime() {
