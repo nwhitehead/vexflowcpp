@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "javascript_runtime.h"
+#include "stb_image_write.h"
 #include "stb_truetype.h"
 
 std::string read_file(std::string filename) {
@@ -30,19 +31,14 @@ int main(int argc, char *argv[]) {
         abort();
     }
 
-    float scale_height = stbtt_ScaleForPixelHeight(&font, 43 * 2);
+    float scale_height = stbtt_ScaleForPixelHeight(&font, 43 * 20);
 
     std::cout << "scale_height=" << scale_height << std::endl;
     int c = 0xE050;
     int w, h;
     unsigned char *bitmap = stbtt_GetCodepointBitmap(&font, 0, scale_height, c, &w, &h, nullptr, nullptr);
 
-    std::cout << "w=" << w << " h=" << h << std::endl;
-    for (int j=0; j < h; ++j) {
-        for (int i=0; i < w; ++i)
-            putchar(" .:ioVM@"[bitmap[j*w+i]>>5]);
-        putchar('\n');
-    }
+    stbi_write_png("out.png", w, h, 1, bitmap, w);
 
     return EXIT_SUCCESS;
 }

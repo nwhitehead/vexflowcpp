@@ -14,7 +14,7 @@ if (MSVC)
     add_compile_options(/W4 /WX)
 else()
     if ( NOT APPLE )
-        target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
+        target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wno-missing-field-initializers)
     endif()
 endif()
 
