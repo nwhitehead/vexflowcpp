@@ -1,13 +1,11 @@
 
-function measureText(txt, font) {
-    return JSON.parse(call('_measure_text', JSON.stringify({ txt, font })))
-}
-
 function assert(value) {
     if (!value) {
         throw new Exception("Assertion failed");
     }
 }
+
+globalThis.print = cpp_print;
 
 globalThis.console = {
     log(txt) {
@@ -26,7 +24,16 @@ globalThis.document = {
                     return {
                         measureText(txt) {
                             //print(`measureText(${txt}) len=${txt.length} font=${this.font}`);
-                            return measureText(txt, this.font);
+                            let res = cpp_measure_text(txt, this.font);
+                            return {
+                                width: 20,
+                                actualBoundingBoxLeft: 20,
+                                actualBoundingBoxRight: 20,
+                                fontBoundingBoxAscent: 20,
+                                fontBoundingBoxDescent: 20,
+                                actualBoundingBoxAscent: 10,
+                                actualBoundingBoxDescent: 10,
+                            }
                         }
                     };
                 }
@@ -35,7 +42,7 @@ globalThis.document = {
     }
 };
 
-class GodotCanvasContext {
+class CanvasContext {
     constructor() {
         // Need canvas field to hold final computed scaled width and height
         this.canvas = { width:0, height: 0 };
@@ -110,11 +117,11 @@ class GodotCanvasContext {
     }
 }
 
-class GodotCanvas {
+class Canvas {
     constructor() {
         this.width = 0;
         this.height = 0;
-        this.context = new GodotCanvasContext();
+        this.context = new CanvasContext();
     }
     getContext() {
         return this.context;
@@ -129,7 +136,7 @@ class GodotCanvas {
 
 const { Factory, EasyScore, System } = VexFlow;
 
-const canvas = new GodotCanvas();
+const canvas = new Canvas();
 
 const vf = new Factory({
     renderer: { elementId: canvas, width: 500, height: 200, backend: 1 },

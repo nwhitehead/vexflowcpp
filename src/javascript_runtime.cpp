@@ -12,7 +12,7 @@
 #include "quickjs.h"
 #pragma GCC diagnostic pop
 
-std::string js_getString(JSContext *ctx, JSValueConst &arg) {
+std::string getString(JSContext *ctx, JSValueConst &arg) {
     size_t len{};
     const char *str = JS_ToCStringLen(ctx, &len, arg);
     if (!str) {
@@ -23,10 +23,18 @@ std::string js_getString(JSContext *ctx, JSValueConst &arg) {
     return msg;
 }
 
-JSValue js_print(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
+JSValue cpp_print(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
     assert(argc == 1);
-    std::string msg{js_getString(ctx, argv[0])};
+    std::string msg{getString(ctx, argv[0])};
     std::cout << msg << std::endl;
+    return JS_UNDEFINED;
+}
+
+JSValue cpp_measure_text(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
+    assert(argc == 2);
+    std::string txt{getString(ctx, argv[0])};
+    std::string font{getString(ctx, argv[1])};
+    std::cout << "cpp_measure_text(" << txt << ", " << font << ")" << std::endl;
     return JS_UNDEFINED;
 }
 
@@ -43,7 +51,8 @@ JavaScriptRuntime::JavaScriptRuntime() {
     }
     // Register globals
     JSValue global = JS_GetGlobalObject(context);
-    JS_SetPropertyStr(context, global, "print", JS_NewCFunction(context, js_print, "js_print", 1));
+    JS_SetPropertyStr(context, global, "cpp_print", JS_NewCFunction(context, cpp_print, "cpp_print", 1));
+    JS_SetPropertyStr(context, global, "cpp_measure_text", JS_NewCFunction(context, cpp_measure_text, "cpp_measure_text", 2));
     JS_FreeValue(context, global);
 }
 

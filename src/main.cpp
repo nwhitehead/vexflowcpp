@@ -10,6 +10,10 @@
 #include "stb_truetype.h"
 
 extern unsigned char external_Bravura_otf[];
+extern unsigned char external_vexflow_debug_js_js[];
+extern int external_vexflow_debug_js_js_len;
+extern unsigned char src_vexflow_wrap_js[];
+extern int src_vexflow_wrap_js_len;
 
 std::string read_file(std::string filename) {
     // I hate C++ with a passion
@@ -64,7 +68,7 @@ public:
         if (!success) {
             throw std::runtime_error("Bravura font could not be initialized");
         }
-        size = 43.0f;
+        size = 430.0f;
         scale_height = stbtt_ScaleForPixelHeight(&font, size);
     }
     ~Renderer() {
@@ -82,6 +86,13 @@ public:
 
 int main(int argc, char *argv[]) {
     std::cout << "Offline C++ VexFlow render" << std::endl;
+
+    JavaScriptRuntime runtime;
+    runtime.eval(std::string((char *)external_vexflow_debug_js_js), "vexflow-debug.js");
+    runtime.eval(std::string((char *)src_vexflow_wrap_js, src_vexflow_wrap_js_len), "vexflow_wrap.js");
+
+    std::string result = runtime.get("__result");
+    std::cout << result << std::endl;
 
     Renderer renderer{};
     int c = 0xE050; // G clef
