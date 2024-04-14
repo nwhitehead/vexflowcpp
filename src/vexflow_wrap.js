@@ -1,7 +1,10 @@
 
-cpp_print(57424);
-cpp_draw_character(57424, 0, 100);
-cpp_draw_line(0, 0, 100, 100)
+// cpp_draw_character(0xe050, 0, 100);
+
+// cpp_draw_line(100, 0, 0, 300)
+// for (var angle = 0.0; angle < 2.0 * 3.14159265; angle += 0.01) {
+//     cpp_draw_line(100, 100, 100 + Math.cos(angle) * 50, 100 + Math.sin(angle) * 50)
+// }
 
 function assert(value) {
     if (!value) {
@@ -54,8 +57,6 @@ class CanvasContext {
         this.position = { x: 0, y: 0 };
         // Whether we are drawing a path
         this.inPath = false;
-        // Array of finished paths
-        this.paths = [];
         // Current path
         this.path = [];
     }
@@ -66,7 +67,8 @@ class CanvasContext {
     }
     fillText(txt, x, y) {
         //print(`fillText(${txt}, ${x}, ${y}) font=${this.font}`);
-        this.paths.push({ type: 'fillText', txt, x, y });
+        cpp_draw_character(txt.codePointAt(0) || 0, x, y)
+        // Render text, txt x y
     }
     beginPath() {
         //print(`beginPath`);
@@ -81,17 +83,19 @@ class CanvasContext {
         //print(`fill`);
         assert(this.inPath === true);
         this.inPath = false;
-        this.paths.push({ type: 'fill', path: this.path });
+        // Render this.path as fill
         delete this.path;
     }
     fillRect(x, y, width, height) {
-        //print(`fillRect x=${x} y=${y} width=${width} height=${height}`);
-        this.paths.push({ type: 'fillRect', x, y, width, height });
+        print(`fillRect x=${x} y=${y} width=${width} height=${height}`);
+        cpp_fill_rect(x, y, width, height);
+        // Render: { type: 'fillRect', x, y, width, height })
     }
     lineTo(x, y) {
         //print(`lineTo x=${x} y=${y}`);
         assert(this.inPath);
-        this.path.push({ type: 'line', start: { ...this.position }, end: { x, y} });
+        // Render: { type: 'line', start: { ...this.position }, end: { x, y} })
+        cpp_draw_line(this.position.x, this.position.y, x, y);
         this.position = { x, y };
     }
     moveTo(x, y) {
@@ -112,12 +116,8 @@ class CanvasContext {
         //print(`stroke`);
         assert(this.inPath === true);
         this.inPath = false;
-        this.paths.push({ type: 'stroke', path: this.path });
+        // Render this.path as stroke
         delete this.path;
-    }
-
-    getOutput() {
-        return JSON.stringify(this.paths);
     }
 }
 

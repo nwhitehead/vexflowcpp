@@ -1,6 +1,7 @@
 #include "javascript_runtime.h"
 
 #include <cassert>
+#include <cmath>
 #include <iostream>
 #include <map>
 #include <stdexcept>
@@ -45,8 +46,50 @@ public:
             }
         }
     }
-    void draw_line(float x0, float y0, float x1, float y1) {
-
+    void fill_rect(double x, double y, double w, double h) {
+        int xi = std::round(x);
+        int yi = std::round(y);
+        int wi = std::round(w);
+        int hi = std::round(h);
+        for (int i = 0; i < hi; i++) {
+            for (int j = 0; j < wi; j++) {
+                set(xi + j, yi + i, 255);
+            }
+        }
+    }
+    void draw_line(double x0, double y0, double x1, double y1) {
+        // Code based on description at:
+        // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+        int xi0 = std::round(x0);
+        int yi0 = std::round(y0);
+        int xi1 = std::round(x1);
+        int yi1 = std::round(y1);
+        int dx = std::abs(xi1 - xi0);
+        int sx = xi0 < xi1 ? 1 : -1;
+        int dy = -std::abs(yi1 - yi0);
+        int sy = yi0 < yi1 ? 1 : -1;
+        int error = dx + dy;
+        while (true) {
+            set(xi0, yi0, 255);
+            if (xi0 == xi1 && yi0 == yi1) {
+                break;
+            }
+            int e2 = error * 2;
+            if (e2 >= dy) {
+                if (xi0 == xi1) {
+                    break;
+                }
+                error += dy;
+                xi0 += sx;
+            }
+            if (e2 <= dx) {
+                if (yi0 == yi1) {
+                    break;
+                }
+                error += dx;
+                yi0 += sy;
+            }
+        }
     }
     void save(std::string filename) {
         stbi_write_png(filename.c_str(), width, height, 1, data.data(), width);
@@ -66,7 +109,7 @@ public:
         if (!success) {
             throw std::runtime_error("Bravura font could not be initialized");
         }
-        size = 430.0f;
+        size = 43.0f * 3;
         scale_height = stbtt_ScaleForPixelHeight(&font, size);
     }
     ~Renderer() {
@@ -130,8 +173,8 @@ JSValue cpp_print(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueCo
 JSValue cpp_draw_character(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
     assert(argc == 3);
     int character = get_int32(ctx, argv[0]);
-    int x = get_int32(ctx, argv[1]);
-    int y = get_int32(ctx, argv[2]);
+    int x = std::round(get_float64(ctx, argv[1]));
+    int y = std::round(get_float64(ctx, argv[2]));
     renderer.draw_character(x, y, character);
     return JS_UNDEFINED;
 }
@@ -143,6 +186,16 @@ JSValue cpp_draw_line(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSVal
     double x1 = get_float64(ctx, argv[2]);
     double y1 = get_float64(ctx, argv[3]);
     renderer.get_canvas().draw_line(x0, y0, x1, y1);
+    return JS_UNDEFINED;
+}
+
+JSValue cpp_fill_rect(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
+    assert(argc == 4);
+    double x = get_float64(ctx, argv[0]);
+    double y = get_float64(ctx, argv[1]);
+    double w = get_float64(ctx, argv[2]);
+    double h = get_float64(ctx, argv[3]);
+    renderer.get_canvas().fill_rect(x, y, w, h);
     return JS_UNDEFINED;
 }
 
@@ -171,6 +224,7 @@ JavaScriptRuntime::JavaScriptRuntime() {
     JS_SetPropertyStr(context, global, "cpp_measure_text", JS_NewCFunction(context, cpp_measure_text, "cpp_measure_text", 2));
     JS_SetPropertyStr(context, global, "cpp_draw_character", JS_NewCFunction(context, cpp_draw_character, "cpp_draw_character", 3));
     JS_SetPropertyStr(context, global, "cpp_draw_line", JS_NewCFunction(context, cpp_draw_line, "cpp_draw_line", 4));
+    JS_SetPropertyStr(context, global, "cpp_fill_rect", JS_NewCFunction(context, cpp_fill_rect, "cpp_fill_rect", 4));
     JS_FreeValue(context, global);
 }
 

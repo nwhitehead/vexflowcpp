@@ -26,11 +26,6 @@ int main(int argc, char *argv[]) {
     JavaScriptRuntime runtime;
     runtime.eval(std::string((char *)external_vexflow_debug_js_js), "vexflow-debug.js");
     runtime.eval(std::string((char *)src_vexflow_wrap_js, src_vexflow_wrap_js_len), "vexflow_wrap.js");
-
-    // Renderer renderer{};
-    // int c = 0xE050; // G clef
-    // renderer.drawCharacter(0, 0, c);
-    // renderer.get_canvas().save("out.png");
     runtime.save("out.png");
     return EXIT_SUCCESS;
 }
