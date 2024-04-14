@@ -55,8 +55,9 @@ set(BUNDLED_FILES
 )
 add_custom_command(
    OUTPUT ${GENERATED_DIR}/bundle.h
-   COMMAND ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/tools/bundle_files.py --out ${GENERATED_DIR}/bundle.h ${BUNDLED_FILES}
+   COMMAND ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/tools/bundle_files.py --inpath ${CMAKE_CURRENT_SOURCE_DIR} --out ${GENERATED_DIR}/bundle.h ${BUNDLED_FILES}
    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tools/bundle_files.py ${BUNDLED_FILES}
 )
+target_include_directories( ${PROJECT_NAME} PRIVATE "${GENERATED_DIR}" )
 
 add_subdirectory( src )
