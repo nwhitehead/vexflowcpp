@@ -1,7 +1,7 @@
 
 cpp_print(57424);
 cpp_draw_character(57424, 0, 100);
-//cpp_draw_line(0, 0, 100, 100)
+cpp_draw_line(0, 0, 100, 100)
 
 function assert(value) {
     if (!value) {

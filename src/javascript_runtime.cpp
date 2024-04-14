@@ -45,6 +45,9 @@ public:
             }
         }
     }
+    void draw_line(float x0, float y0, float x1, float y1) {
+
+    }
     void save(std::string filename) {
         stbi_write_png(filename.c_str(), width, height, 1, data.data(), width);
     }
@@ -68,7 +71,7 @@ public:
     }
     ~Renderer() {
     }
-    void drawCharacter(int x, int y, int character) {
+    void draw_character(int x, int y, int character) {
         int w, h, xoff, yoff;
         unsigned char *bitmap = stbtt_GetCodepointBitmap(&font, 0, scale_height, character, &w, &h, &xoff, &yoff);
         canvas.blit(x, y, bitmap, w, h);
@@ -82,7 +85,7 @@ public:
 // YUCK globals, can't figure out how to get pointer to context for C callbacks
 Renderer renderer{};
 
-std::string getString(JSContext *ctx, JSValueConst &arg) {
+std::string get_string(JSContext *ctx, JSValueConst &arg) {
     size_t len{};
     const char *str = JS_ToCStringLen(ctx, &len, arg);
     if (!str) {
@@ -93,7 +96,7 @@ std::string getString(JSContext *ctx, JSValueConst &arg) {
     return msg;
 }
 
-int getInt32(JSContext *ctx, JSValueConst &arg) {
+int get_int32(JSContext *ctx, JSValueConst &arg) {
     double value{0};
     if (!JS_IsNumber(arg)) {
         throw std::runtime_error("getInt32 exception, not a number");
@@ -105,26 +108,48 @@ int getInt32(JSContext *ctx, JSValueConst &arg) {
     return static_cast<int>(value);
 }
 
+double get_float64(JSContext *ctx, JSValueConst &arg) {
+    double value{0};
+    if (!JS_IsNumber(arg)) {
+        throw std::runtime_error("getInt32 exception, not a number");
+
+    }
+    if (JS_ToFloat64(ctx, &value, arg)) {
+        throw std::runtime_error("getInt32 exception, could not convert to float64");
+    }
+    return value;
+}
+
 JSValue cpp_print(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
     assert(argc == 1);
-    std::string msg{getString(ctx, argv[0])};
+    std::string msg{get_string(ctx, argv[0])};
     std::cout << msg << std::endl;
     return JS_UNDEFINED;
 }
 
 JSValue cpp_draw_character(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
     assert(argc == 3);
-    int character = getInt32(ctx, argv[0]);
-    int x = getInt32(ctx, argv[1]);
-    int y = getInt32(ctx, argv[2]);
-    renderer.drawCharacter(x, y, character);
+    int character = get_int32(ctx, argv[0]);
+    int x = get_int32(ctx, argv[1]);
+    int y = get_int32(ctx, argv[2]);
+    renderer.draw_character(x, y, character);
+    return JS_UNDEFINED;
+}
+
+JSValue cpp_draw_line(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
+    assert(argc == 4);
+    double x0 = get_float64(ctx, argv[0]);
+    double y0 = get_float64(ctx, argv[1]);
+    double x1 = get_float64(ctx, argv[2]);
+    double y1 = get_float64(ctx, argv[3]);
+    renderer.get_canvas().draw_line(x0, y0, x1, y1);
     return JS_UNDEFINED;
 }
 
 JSValue cpp_measure_text(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
     assert(argc == 2);
-    std::string txt{getString(ctx, argv[0])};
-    std::string font{getString(ctx, argv[1])};
+    std::string txt{get_string(ctx, argv[0])};
+    std::string font{get_string(ctx, argv[1])};
     std::cout << "cpp_measure_text(" << txt << ", " << font << ")" << std::endl;
     return JS_UNDEFINED;
 }
@@ -145,6 +170,7 @@ JavaScriptRuntime::JavaScriptRuntime() {
     JS_SetPropertyStr(context, global, "cpp_print", JS_NewCFunction(context, cpp_print, "cpp_print", 1));
     JS_SetPropertyStr(context, global, "cpp_measure_text", JS_NewCFunction(context, cpp_measure_text, "cpp_measure_text", 2));
     JS_SetPropertyStr(context, global, "cpp_draw_character", JS_NewCFunction(context, cpp_draw_character, "cpp_draw_character", 3));
+    JS_SetPropertyStr(context, global, "cpp_draw_line", JS_NewCFunction(context, cpp_draw_line, "cpp_draw_line", 4));
     JS_FreeValue(context, global);
 }
 
