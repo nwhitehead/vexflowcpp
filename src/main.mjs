@@ -2,10 +2,6 @@
 
 import _ from '../src/wrap.mjs';
 
-try {
-//    cpp_import_script('../external/opensheetmusicdisplay.js');
-} catch(e) {
-    console.log(e);
-}
+cpp_import_script('../external/opensheetmusicdisplay.js');
 
 console.log('main again');

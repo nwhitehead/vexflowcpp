@@ -20,7 +20,7 @@ std::string read_file(std::string filename) {
     return buf.str();
 }
 
-int main(int argc, char *argv[]) {
+int main(int /*argc*/, char */*argv*/[]) {
     std::cout << "Offline C++ VexFlow render" << std::endl;
 
     JavaScriptRuntime runtime;

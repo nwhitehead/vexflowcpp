@@ -13,17 +13,17 @@ class JavaScriptRuntime {
 private:
     std::mutex mutex;
     JSRuntime *runtime;
+public:
     JSContext *context;
     Renderer renderer;
-    void _eval(std::string code, std::string source_filename, bool is_module, bool await);
 
-public:
     JavaScriptRuntime();
     ~JavaScriptRuntime();
 
     Renderer &get_renderer();
 
     // Eval JavaScript code
+    void _eval(std::string code, std::string source_filename, bool is_module, bool await);
     void eval(std::string code, std::string source_filename);
     void eval_module(std::string code, std::string source_filename);
     void eval_await(std::string code, std::string source_filename);

@@ -5,26 +5,25 @@
 #include "stb_image_write.h"
 
 Canvas::Canvas(int width_p, int height_p) : width(width_p), height(height_p), data(width * height) {
-    std::cout << "Canvas::Canvas" << std::endl;
+    //std::cout << "Canvas::Canvas" << std::endl;
 }
 
 Canvas::~Canvas() {
-    std::cout << "Canvas::~Canvas" << std::endl;
+    //std::cout << "Canvas::~Canvas" << std::endl;
 }
 
 void Canvas::blit(int x, int y, uint8_t *src, int w, int h) {
-    std::cout << "Canvas::blit x=" << x << " y=" << y << std::endl;
+    //std::cout << "Canvas::blit x=" << x << " y=" << y << std::endl;
     for (int i = 0; i < h; i++) {
         for (int j = 0; j < w; j++) {
             int value = src[j + i * w];
             blend(x + j, y + i, value);
         }
     }
-    debug();
 }
 
 void Canvas::fill_rect(double x, double y, double w, double h) {
-    std::cout << "Canvas::fill_rect" << std::endl;
+    //std::cout << "Canvas::fill_rect" << std::endl;
     int xi = std::round(x);
     int yi = std::round(y);
     int wi = std::round(w);
@@ -37,7 +36,7 @@ void Canvas::fill_rect(double x, double y, double w, double h) {
 }
 
 void Canvas::draw_line(double x0, double y0, double x1, double y1) {
-    std::cout << "Canvas::draw_line" << std::endl;
+    //std::cout << "Canvas::draw_line" << std::endl;
     // Code based on description at:
     // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
     int xi0 = std::round(x0);
@@ -81,7 +80,6 @@ void Canvas::debug() {
 }
 
 void Canvas::save(std::string filename) {
-    std::cout << "Canvas::save" << std::endl;
-    debug();
+    //std::cout << "Canvas::save" << std::endl;
     stbi_write_png(filename.c_str(), width, height, 1, data.data(), width);
 }

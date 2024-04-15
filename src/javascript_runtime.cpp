@@ -100,7 +100,6 @@ JSValue cpp_draw_character(JSContext *ctx, JSValueConst /*this_val*/, int argc, 
     int x = std::round(get_float64(ctx, argv[1]));
     int y = std::round(get_float64(ctx, argv[2]));
     Renderer &renderer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx))->get_renderer();
-    std::cout << "cpp_draw_character " << character << " size=" << renderer.size << std::endl;
     renderer.draw_character(x, y, character);
     return JS_UNDEFINED;
 }
@@ -142,7 +141,12 @@ JSValue cpp_measure_text(JSContext *ctx, JSValueConst /*this_val*/, int argc, JS
 JSValue cpp_import_script(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
     assert(argc == 1);
     std::string filename{get_string(ctx, argv[0])};
-    static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx))->eval(read_file(filename), filename);
+    JavaScriptRuntime *this_pointer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx));
+    JSContext *ctx2 = this_pointer->context;
+    std::string contents = read_file(filename);
+    std::cout << "cpp_import_script len=" << contents.size() << " filename=" << filename << " ctx=" << (void*)ctx << " this_pointer->context=" << (void*)ctx2 << std::endl;
+    this_pointer->_eval(contents, filename, false, false);
+    return JS_UNDEFINED;
 }
 
 Renderer &JavaScriptRuntime::get_renderer() {
@@ -182,14 +186,17 @@ JavaScriptRuntime::~JavaScriptRuntime() {
 }
 
 void JavaScriptRuntime::eval(std::string code, std::string source_filename) {
+    std::lock_guard<std::mutex> guard(mutex);
     _eval(code, source_filename, false, false);
 }
 
 void JavaScriptRuntime::eval_module(std::string code, std::string source_filename) {
+    std::lock_guard<std::mutex> guard(mutex);
     _eval(code, source_filename, true, false);
 }
 
 void JavaScriptRuntime::eval_await(std::string code, std::string source_filename) {
+    std::lock_guard<std::mutex> guard(mutex);
     _eval(code, source_filename, true, true);
 }
 
@@ -226,8 +233,9 @@ JSValue std_await(JSContext *ctx, JSValue obj)
 }
 
 void JavaScriptRuntime::_eval(std::string code, std::string source_filename, bool is_module, bool await) {
-    std::lock_guard<std::mutex> guard(mutex);
+    std::cout << "Entering _eval for " << source_filename << std::endl;
     JSValue val = JS_Eval(context, code.c_str(), code.size(), source_filename.c_str(), is_module ? JS_EVAL_TYPE_MODULE : 0);
+    std::cout << "Done _eval for " << source_filename << std::endl;
     if (await) {
         val = std_await(context, val);
     }

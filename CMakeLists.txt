@@ -4,6 +4,13 @@ project( vexflowcpp )
 
 add_executable(${PROJECT_NAME})
 
+option(sanitize "Enable address sanitizer" OFF)
+
+if (sanitize)
+    target_compile_options(${PROJECT_NAME} PUBLIC -fsanitize=undefined -fsanitize=address -fno-omit-frame-pointer)
+    target_link_options(${PROJECT_NAME} PUBLIC -fsanitize=undefined -fsanitize=address -fno-omit-frame-pointer)
+endif()
+
 target_compile_features( ${PROJECT_NAME}
     PRIVATE
         cxx_std_20

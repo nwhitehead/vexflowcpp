@@ -12,14 +12,13 @@ Renderer::Renderer() : canvas(800, 600) {
     }
     size = 150.0;
     scale = stbtt_ScaleForPixelHeight(&font, size);
-    std::cout << "SCALE=" << scale << std::endl;
+    //std::cout << "SCALE=" << scale << std::endl;
 }
 Renderer::~Renderer() {
 }
 void Renderer::draw_character(int x, int y, int character) {
     int w, h, xoff, yoff;
     unsigned char *bitmap = stbtt_GetCodepointBitmap(&font, 0, scale, character, &w, &h, &xoff, &yoff);
-    std::cout << "Renderer:draw_character " << character << " x=" << x << " y=" << y << " w=" << w << " h=" << h << " xoff=" << xoff << " yoff=" << yoff << std::endl;
     canvas.blit(x + xoff, y + yoff, bitmap, w, h);
     std::free(bitmap);
 }
