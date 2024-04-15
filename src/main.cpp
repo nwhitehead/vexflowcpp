@@ -26,7 +26,7 @@ int main(int /*argc*/, char */*argv*/[]) {
     JavaScriptRuntime runtime;
     runtime.eval(read_file("../external/opensheetmusicdisplay.js"), "opensheetmusicdisplay.js");
     runtime.set("__MozaVeilSample_xml", read_file("../external/MozaVeilSample.xml"));
-    runtime.eval_module(read_file("../src/main.mjs"), "main.mjs");
+    runtime.eval_await(read_file("../src/main.mjs"), "main.mjs");
     //runtime.eval_module(std::string((char *)src_vexflow_wrap_mjs, src_vexflow_wrap_mjs_len), "./vexflow_wrap.mjs");
     runtime.save("out.png");
     return EXIT_SUCCESS;

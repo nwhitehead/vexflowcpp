@@ -138,13 +138,19 @@ JSValue cpp_measure_text(JSContext *ctx, JSValueConst /*this_val*/, int argc, JS
     return result;
 }
 
+JSValue cpp_read_file(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
+    assert(argc == 1);
+    std::string filename{get_string(ctx, argv[0])};
+    std::string contents = read_file(filename);
+    return JS_NewStringLen(ctx, contents.c_str(), contents.size());
+}
+
 JSValue cpp_import_script(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
     assert(argc == 1);
     std::string filename{get_string(ctx, argv[0])};
     JavaScriptRuntime *this_pointer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx));
-    JSContext *ctx2 = this_pointer->context;
     std::string contents = read_file(filename);
-    std::cout << "cpp_import_script len=" << contents.size() << " filename=" << filename << " ctx=" << (void*)ctx << " this_pointer->context=" << (void*)ctx2 << std::endl;
+    //std::cout << "cpp_import_script len=" << contents.size() << " filename=" << filename << " ctx=" << (void*)ctx << " this_pointer->context=" << (void*)this_pointer->context << std::endl;
     this_pointer->_eval(contents, filename, false, false);
     return JS_UNDEFINED;
 }
@@ -177,6 +183,7 @@ JavaScriptRuntime::JavaScriptRuntime() {
     JS_SetPropertyStr(context, global, "cpp_draw_line", JS_NewCFunction(context, cpp_draw_line, "cpp_draw_line", 4));
     JS_SetPropertyStr(context, global, "cpp_fill_rect", JS_NewCFunction(context, cpp_fill_rect, "cpp_fill_rect", 4));
     JS_SetPropertyStr(context, global, "cpp_import_script", JS_NewCFunction(context, cpp_import_script, "cpp_import_script", 1));
+    JS_SetPropertyStr(context, global, "cpp_read_file", JS_NewCFunction(context, cpp_read_file, "cpp_read_file", 1));
     JS_FreeValue(context, global);
 }
 
@@ -233,9 +240,9 @@ JSValue std_await(JSContext *ctx, JSValue obj)
 }
 
 void JavaScriptRuntime::_eval(std::string code, std::string source_filename, bool is_module, bool await) {
-    std::cout << "Entering _eval for " << source_filename << std::endl;
+    //std::cout << "Entering _eval for " << source_filename << std::endl;
     JSValue val = JS_Eval(context, code.c_str(), code.size(), source_filename.c_str(), is_module ? JS_EVAL_TYPE_MODULE : 0);
-    std::cout << "Done _eval for " << source_filename << std::endl;
+    //std::cout << "Done _eval for " << source_filename << std::endl;
     if (await) {
         val = std_await(context, val);
     }

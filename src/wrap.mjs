@@ -23,4 +23,19 @@ globalThis.window = {
     setTimeout() {},
 };
 
+globalThis.document = {
+    getElementById(id) {
+        console.log(`getElementById(${id})`);
+        return {}
+    },
+};
+
+class DOMParser {
+    constructor() {}
+    parseFromString(txt, mimetype) {
+        return {}
+    }
+}
+globalThis.DOMParser = DOMParser;
+
 export default {}
