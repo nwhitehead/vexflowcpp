@@ -3,6 +3,8 @@
 #include <mutex>
 #include <string>
 
+#include "renderer.h"
+
 struct JSRuntime;
 struct JSContext;
 
@@ -12,11 +14,14 @@ private:
     std::mutex mutex;
     JSRuntime *runtime;
     JSContext *context;
+    Renderer renderer;
     void _eval(std::string code, std::string source_filename, bool is_module, bool await);
 
 public:
     JavaScriptRuntime();
     ~JavaScriptRuntime();
+
+    Renderer &get_renderer();
 
     // Eval JavaScript code
     void eval(std::string code, std::string source_filename);

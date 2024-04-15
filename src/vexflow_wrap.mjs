@@ -17,12 +17,6 @@ try {
     cpp_print('Uncaught exception: ' + e);
 }
 
-function assert(value) {
-    if (!value) {
-        throw new Exception("Assertion failed");
-    }
-}
-
 globalThis.print = cpp_print;
 
 globalThis.console = {
