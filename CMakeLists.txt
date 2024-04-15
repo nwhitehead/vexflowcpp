@@ -50,7 +50,6 @@ set(GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(PYTHON3 python)
 set(BUNDLED_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/external/Bravura.otf
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/vexflow-debug.js.js
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vexflow_wrap.js
 )
 add_custom_command(

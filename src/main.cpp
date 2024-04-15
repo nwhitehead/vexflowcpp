@@ -7,8 +7,8 @@
 
 #include "javascript_runtime.h"
 
-extern unsigned char external_vexflow_debug_js_js[];
-extern int external_vexflow_debug_js_js_len;
+extern unsigned char external_opensheetmusicdisplay_js[];
+extern int external_opensheetmusicdisplay_js_len;
 extern unsigned char src_vexflow_wrap_js[];
 extern int src_vexflow_wrap_js_len;
 
@@ -24,7 +24,9 @@ int main(int argc, char *argv[]) {
     std::cout << "Offline C++ VexFlow render" << std::endl;
 
     JavaScriptRuntime runtime;
-    runtime.eval(std::string((char *)external_vexflow_debug_js_js), "vexflow-debug.js");
+    std::string osmd = read_file("../external/opensheetmusicdisplay.js");
+    runtime.eval(osmd, "opensheetmusicdisplay.js");
+    runtime.set("__MozaVeilSample_xml", read_file("../external/MozaVeilSample.xml"));
     runtime.eval(std::string((char *)src_vexflow_wrap_js, src_vexflow_wrap_js_len), "vexflow_wrap.js");
     runtime.save("out.png");
     return EXIT_SUCCESS;

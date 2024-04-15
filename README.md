@@ -13,7 +13,7 @@ interpreter. The main program is a C++ application that integrates QuickJS with
 various simple in-memory graphics drawing functions, then stubs out `document`
 and `CanvasRenderingContext2D` to call the right graphics operations.
 
-For graphics, this project uses the wonder [STB](https://github.com/nothings/stb/)
+For graphics, this project uses the wonderful [STB](https://github.com/nothings/stb/)
 libraries of Sean Barrett. This includes:
 * `stb_truetype.h` for font rendering
 * `stb_image_write.h` for image writing

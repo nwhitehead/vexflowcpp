@@ -293,6 +293,13 @@ void JavaScriptRuntime::eval(std::string code, std::string source_filename) {
     JS_FreeValue(context, val);
 }
 
+void JavaScriptRuntime::set(std::string identifier, std::string value) {
+    JSValue global = JS_GetGlobalObject(context);
+    JS_SetPropertyStr(context, global, identifier.c_str(), JS_NewStringLen(context, value.data(), value.size()));
+    JS_FreeValue(context, global);
+
+}
+
 void JavaScriptRuntime::save(std::string filename) {
     renderer.get_canvas().save("out.png");
 }

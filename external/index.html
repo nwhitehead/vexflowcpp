@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+
+<div id="osmdContainer"/>
+<script src="opensheetmusicdisplay.min.js"></script>
+<script>
+  var osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay("osmdContainer");
+  osmd.setOptions({
+    backend: "canvas",
+    drawTitle: true,
+    // drawingParameters: "compacttight" // don't display title, composer etc., smaller margins
+  });
+  osmd
+    .load("MozaVeilSample.xml")
+    .then(
+      function() {
+        osmd.render();
+      }
+    );
+</script>
+
+</body>
+
+</html>

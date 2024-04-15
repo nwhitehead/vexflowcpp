@@ -20,10 +20,24 @@ globalThis.console = {
     },
     warn(txt) {
         print(txt);
+    },
+    error(txt) {
+        print(txt);
     }
 };
 
+globalThis.log.debug = print;
+
+globalThis.window = {
+    addEventListener() {},
+    setTimeout() {},
+};
+
 globalThis.document = {
+    getElementById(id) {
+        print(`getElementById(${id})`);
+        return {}
+    },
     createElement(t) {
         if (t === 'canvas') {
             return {
@@ -137,29 +151,34 @@ class Canvas {
     }
 }
 
+class XMLHttpRequest {
+    // Oops, dont' need, can pass XML string directly
+    constructor() {}
+    static DONE = 1
+    overrideMimeType() {}
+    open(method, url) {
+        print(`XMLHttpRequest.open(${method}, ${url})`);
+    }
+    send() {
+        print(`XMLHttpRequest.send()`);
+        this.status = 200;
+        this.readyState = XMLHttpRequest.DONE;
+        this.onreadystatechange();
+    }
+}
 ///////////////////////////////////////////////////
 
-const { Factory, EasyScore, System } = VexFlow;
-
-const canvas = new Canvas();
-
-const vf = new Factory({
-    renderer: { elementId: canvas, width: 0, height: 0, backend: 1 },
+var osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay("osmdContainer");
+osmd.setOptions({
+    backend: "canvas",
+    drawTitle: true,
 });
 
-//VexFlow.setMusicFont("Bravura");
-//"Petaluma", "Bravura", "Gonville");
+// print(`XML is ${__MozaVeilSample_xml}`);
 
-const score = vf.EasyScore();
-const system = vf.System();
+async function main() {
+    print(osmd.version);
+    osmd.load(__MozaVeilSample_xml);
+}
 
-system
-    .addStave({
-        voices: [
-            score.voice(score.notes('C5/q, B4, A4, G#4', { stem: 'up' })),
-            score.voice(score.notes('C#4/h, C#4', { stem: 'down' })),        ],
-    })
-    .addClef('treble')
-    .addTimeSignature('4/4');
-
-vf.draw();
+main()
