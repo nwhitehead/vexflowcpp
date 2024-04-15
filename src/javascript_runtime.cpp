@@ -2,8 +2,10 @@
 
 #include <cassert>
 #include <cmath>
+#include <fstream>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <stdexcept>
 #include <vector>
 
@@ -234,7 +236,43 @@ JSValue cpp_measure_text(JSContext *ctx, JSValueConst /*this_val*/, int argc, JS
     return result;
 }
 
+
+namespace {
+
+std::string read_file(std::string filename) {
+    // I hate C++ with a passion
+    std::ostringstream buf;
+    std::ifstream input{filename};
+    buf << input.rdbuf();
+    return buf.str();
+}
+
+JSModuleDef *module_loader(JSContext *ctx, const char *module_name, void *opaque) {
+    JSModuleDef *m;
+    JSValue func_val;
+    std::string buf;
+    try {
+        buf = read_file(module_name);
+    } catch(...) {
+        JS_ThrowReferenceError(ctx, "could not load module filename '%s'", module_name);
+        return nullptr;
+    }
+    // Compile module
+    func_val = JS_Eval(ctx, buf.data(), buf.size(), module_name, JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY);
+    if (JS_IsException(func_val)) {
+        return nullptr;
+    }
+    // Module is referenced, so free it once
+    m = static_cast<JSModuleDef*>(JS_VALUE_GET_PTR(func_val));
+    JS_FreeValue(ctx, func_val);
+    return m;
+}
+
+} // namespace anonymous
+
+
 JavaScriptRuntime::JavaScriptRuntime() {
+    // Create runtime and context
     runtime = JS_NewRuntime();
     if (!runtime) {
         std::cerr << "JavaScriptRuntime::JavaScriptRuntime() Could not create QuickJS runtime" << std::endl;
@@ -245,6 +283,8 @@ JavaScriptRuntime::JavaScriptRuntime() {
         std::cerr << "JavaScriptRuntime::JavaScriptRuntime() Could not create QuickJS context" << std::endl;
         throw new std::runtime_error("Could not create QuickJS runtime");
     }
+    // Register module loader
+    JS_SetModuleLoaderFunc(runtime, nullptr, module_loader, nullptr);
     // Register globals
     JSValue global = JS_GetGlobalObject(context);
     JS_SetPropertyStr(context, global, "cpp_print", JS_NewCFunction(context, cpp_print, "cpp_print", 1));
@@ -261,8 +301,56 @@ JavaScriptRuntime::~JavaScriptRuntime() {
 }
 
 void JavaScriptRuntime::eval(std::string code, std::string source_filename) {
+    _eval(code, source_filename, false, false);
+}
+
+void JavaScriptRuntime::eval_module(std::string code, std::string source_filename) {
+    _eval(code, source_filename, true, false);
+}
+
+void JavaScriptRuntime::eval_await(std::string code, std::string source_filename) {
+    _eval(code, source_filename, true, true);
+}
+
+/* Wait for a promise and execute pending jobs while waiting for
+   it. Return the promise result or JS_EXCEPTION in case of promise
+   rejection. */
+JSValue std_await(JSContext *ctx, JSValue obj)
+{
+    JSValue ret;
+    int state;
+
+    for(;;) {
+        state = JS_PromiseState(ctx, obj);
+        if (state == JS_PROMISE_FULFILLED) {
+            ret = JS_PromiseResult(ctx, obj);
+            JS_FreeValue(ctx, obj);
+            break;
+        } else if (state == JS_PROMISE_REJECTED) {
+            ret = JS_Throw(ctx, JS_PromiseResult(ctx, obj));
+            JS_FreeValue(ctx, obj);
+            break;
+        } else if (state == JS_PROMISE_PENDING) {
+            JSContext *ctx1;
+            int err;
+            err = JS_ExecutePendingJob(JS_GetRuntime(ctx), &ctx1);
+            if (err < 0) {
+                std::cerr << "JS_ExecutePendingJob failed" << std::endl;
+            }
+        } else {
+            ret = obj;
+            break;
+        }
+    }
+    return ret;
+}
+
+void JavaScriptRuntime::_eval(std::string code, std::string source_filename, bool is_module, bool await) {
     std::lock_guard<std::mutex> guard(mutex);
-    JSValue val = JS_Eval(context, code.c_str(), code.size(), source_filename.c_str(), 0);
+    JSValue val = JS_Eval(context, code.c_str(), code.size(), source_filename.c_str(), is_module ? JS_EVAL_TYPE_MODULE : 0);
+    if (await) {
+        val = std_await(context, val);
+    }
     // Check if return value is an exception
     if (JS_IsException(val)) {
         JSValue exval = JS_GetException(context);
@@ -297,7 +385,6 @@ void JavaScriptRuntime::set(std::string identifier, std::string value) {
     JSValue global = JS_GetGlobalObject(context);
     JS_SetPropertyStr(context, global, identifier.c_str(), JS_NewStringLen(context, value.data(), value.size()));
     JS_FreeValue(context, global);
-
 }
 
 void JavaScriptRuntime::save(std::string filename) {

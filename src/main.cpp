@@ -9,8 +9,8 @@
 
 extern unsigned char external_opensheetmusicdisplay_js[];
 extern int external_opensheetmusicdisplay_js_len;
-extern unsigned char src_vexflow_wrap_js[];
-extern int src_vexflow_wrap_js_len;
+extern unsigned char src_vexflow_wrap_mjs[];
+extern int src_vexflow_wrap_mjs_len;
 
 std::string read_file(std::string filename) {
     // I hate C++ with a passion
@@ -25,9 +25,10 @@ int main(int argc, char *argv[]) {
 
     JavaScriptRuntime runtime;
     std::string osmd = read_file("../external/opensheetmusicdisplay.js");
-    runtime.eval(osmd, "opensheetmusicdisplay.js");
+    //runtime.eval(osmd, "opensheetmusicdisplay.js");
     runtime.set("__MozaVeilSample_xml", read_file("../external/MozaVeilSample.xml"));
-    runtime.eval(std::string((char *)src_vexflow_wrap_js, src_vexflow_wrap_js_len), "vexflow_wrap.js");
-    runtime.save("out.png");
+    runtime.eval_await(read_file("../src/main.mjs"), "main.mjs");
+    //runtime.eval_module(std::string((char *)src_vexflow_wrap_mjs, src_vexflow_wrap_mjs_len), "./vexflow_wrap.mjs");
+    //runtime.save("out.png");
     return EXIT_SUCCESS;
 }

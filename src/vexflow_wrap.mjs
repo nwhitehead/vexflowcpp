@@ -6,6 +6,17 @@
 //     cpp_draw_line(100, 100, 100 + Math.cos(angle) * 50, 100 + Math.sin(angle) * 50)
 // }
 
+import { main } from "./main.mjs";
+
+cpp_print('hi');
+cpp_print(main);
+
+try {
+    await main();
+} catch(e) {
+    cpp_print('Uncaught exception: ' + e);
+}
+
 function assert(value) {
     if (!value) {
         throw new Exception("Assertion failed");
@@ -26,7 +37,11 @@ globalThis.console = {
     }
 };
 
-globalThis.log.debug = print;
+globalThis.log = {
+    debug(msg) {
+        print(msg);
+    }
+};
 
 globalThis.window = {
     addEventListener() {},
@@ -178,7 +193,15 @@ osmd.setOptions({
 
 async function main() {
     print(osmd.version);
-    osmd.load(__MozaVeilSample_xml);
+    osmd.setLogLevel('trace');
+    try {
+        osmd.load(__MozaVeilSample_xml).then(() => {
+            osmd.render();
+        });
+    
+    } catch(e) {
+        console.log(e);
+    }
 }
 
-main()
+await main();
