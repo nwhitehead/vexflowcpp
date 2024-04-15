@@ -118,27 +118,30 @@ private:
     // Font to use for drawing text/symbols
     stbtt_fontinfo font;
     float size;
-    float scale_height;
+    float scale;
 public:
     Renderer() : canvas(800, 600) {
         int success = stbtt_InitFont(&font, external_Bravura_otf, stbtt_GetFontOffsetForIndex(external_Bravura_otf, 0));
         if (!success) {
             throw std::runtime_error("Bravura font could not be initialized");
         }
-        size = 43.0f * 3;
-        scale_height = stbtt_ScaleForPixelHeight(&font, size);
+        size = 150.0;
+        scale = stbtt_ScaleForPixelHeight(&font, size);
+        std::cout << "SCALE=" << scale << std::endl;
     }
     ~Renderer() {
     }
     void draw_character(int x, int y, int character) {
         int w, h, xoff, yoff;
-        unsigned char *bitmap = stbtt_GetCodepointBitmap(&font, 0, scale_height, character, &w, &h, &xoff, &yoff);
+        unsigned char *bitmap = stbtt_GetCodepointBitmap(&font, 0, scale, character, &w, &h, &xoff, &yoff);
         canvas.blit(x + xoff, y + yoff, bitmap, w, h);
         std::free(bitmap);
     }
     CodepointMetrics measure_character(int character) {
         CodepointMetrics result;
-        result.width = 20;
+        int advanceWidth, leftSideBearing;
+        stbtt_GetCodepointHMetrics(&font, character, &advanceWidth, &leftSideBearing);
+        result.width = (advanceWidth - leftSideBearing) * scale;
         return result;
     }
     Canvas &get_canvas() {

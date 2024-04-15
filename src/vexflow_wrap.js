@@ -144,7 +144,7 @@ const { Factory, EasyScore, System } = VexFlow;
 const canvas = new Canvas();
 
 const vf = new Factory({
-    renderer: { elementId: canvas, width: 500, height: 200, backend: 1 },
+    renderer: { elementId: canvas, width: 0, height: 0, backend: 1 },
 });
 
 //VexFlow.setMusicFont("Bravura");
