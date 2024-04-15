@@ -24,8 +24,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Offline C++ VexFlow render" << std::endl;
 
     JavaScriptRuntime runtime;
-    std::string osmd = read_file("../external/opensheetmusicdisplay.js");
-    //runtime.eval(osmd, "opensheetmusicdisplay.js");
+    runtime.eval(read_file("../external/opensheetmusicdisplay.js"), "opensheetmusicdisplay.js");
     runtime.set("__MozaVeilSample_xml", read_file("../external/MozaVeilSample.xml"));
     runtime.eval_await(read_file("../src/main.mjs"), "main.mjs");
     //runtime.eval_module(std::string((char *)src_vexflow_wrap_mjs, src_vexflow_wrap_mjs_len), "./vexflow_wrap.mjs");

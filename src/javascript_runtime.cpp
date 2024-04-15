@@ -247,7 +247,7 @@ std::string read_file(std::string filename) {
     return buf.str();
 }
 
-JSModuleDef *module_loader(JSContext *ctx, const char *module_name, void *opaque) {
+JSModuleDef *module_loader(JSContext *ctx, const char *module_name, void */*opaque*/) {
     JSModuleDef *m;
     JSValue func_val;
     std::string buf;
@@ -312,15 +312,14 @@ void JavaScriptRuntime::eval_await(std::string code, std::string source_filename
     _eval(code, source_filename, true, true);
 }
 
-/* Wait for a promise and execute pending jobs while waiting for
-   it. Return the promise result or JS_EXCEPTION in case of promise
-   rejection. */
+// Wait for a promise and execute pending jobs while waiting for it. Return the
+// promise result or JS_EXCEPTION in case of promise rejection.
 JSValue std_await(JSContext *ctx, JSValue obj)
 {
     JSValue ret;
     int state;
 
-    for(;;) {
+    while(true) {
         state = JS_PromiseState(ctx, obj);
         if (state == JS_PROMISE_FULFILLED) {
             ret = JS_PromiseResult(ctx, obj);
@@ -388,5 +387,5 @@ void JavaScriptRuntime::set(std::string identifier, std::string value) {
 }
 
 void JavaScriptRuntime::save(std::string filename) {
-    renderer.get_canvas().save("out.png");
+    renderer.get_canvas().save(filename);
 }
