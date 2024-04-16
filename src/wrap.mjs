@@ -30,12 +30,9 @@ globalThis.document = {
     },
 };
 
-class DOMParser {
-    constructor() {}
-    parseFromString(txt, mimetype) {
-        return {}
-    }
+class Node {
+    static ELEMENT_NODE=1
 }
-globalThis.DOMParser = DOMParser;
+globalThis.Node = Node;
 
 export default {}
