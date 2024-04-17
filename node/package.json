@@ -1,0 +1,22 @@
+{
+  "name": "vexcontrol-test",
+  "version": "1.0.0",
+  "description": "Vexcontrol test.",
+  "scripts": {
+    "build": "webpack",
+    "serve": "node src/index.js",
+    "preview": "node dist/bundle.cjs"
+  },
+  "type": "module",
+  "author": "Nathan Whitehead",
+  "license": "Proprietary",
+  "dependencies": {
+    "cross-blob": "^3.0.2",
+    "express": "^4.19.2",
+    "jsdom": "^24.0.0"
+  },
+  "devDependencies": {
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4"
+  }
+}
