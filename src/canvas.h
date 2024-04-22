@@ -19,6 +19,7 @@ private:
 public:
     Canvas(int width_p, int height_p);
     ~Canvas();
+    void resize(int width_p, int height_p);
     inline int index(int x, int y) {
         return x + width * y;
     }

@@ -75,76 +75,55 @@ class CanvasContext {
         this.position = { x: 0, y: 0 };
         // Whether we are drawing a path
         this.inPath = false;
-        // Current path
-        this.path = [];
     }
     // Wrapped methods
     getTransform() {
-        //print(`getTransform`);
         return 1;
     }
     fillText(txt, x, y) {
         const { font, size } = parseFont(this.font);
         const scale = cpp_get_font_scale(font, size) * globalFontScale;
-        //print(`fillText(${txt}, ${x}, ${y}) font=${this.font}`);
         cpp_draw_character(txt.codePointAt(0) || 0, x, y, font, scale)
-        // Render text, txt x y
     }
     beginPath() {
-        //print(`beginPath`);
         assert(this.inPath === false);
         this.inPath = true;
-        this.path = [];
     }
     bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y) {
-        //print(`bezierCurveTo cp1x=${cp1x} cp1y=${cp1y} cp2x=${cp2x} cp2y=${cp2y} x=${x} y=${y}`);
+        assert(false);
     }
     fill() {
-        //print(`fill`);
         assert(this.inPath === true);
         this.inPath = false;
-        // Render this.path as fill
-        delete this.path;
     }
     fillRect(x, y, width, height) {
-        //print(`fillRect x=${x} y=${y} width=${width} height=${height}`);
         cpp_fill_rect(x, y, width, height);
-        // Render: { type: 'fillRect', x, y, width, height })
     }
     lineTo(x, y) {
-        //print(`lineTo x=${x} y=${y}`);
         assert(this.inPath);
-        // Render: { type: 'line', start: { ...this.position }, end: { x, y} })
         cpp_draw_line(this.position.x, this.position.y, x, y);
         this.position = { x, y };
     }
     moveTo(x, y) {
-        //print(`moveTo x=${x} y=${y}`);
         assert(this.inPath);
         this.position = { x, y };
     }
     restore() {
-        //print(`restore`);
     }
     save() {
-        //print(`save`);
     }
     scale(x, y) {
-        //print(`scale x=${x} y=${y}`);
     }
     stroke() {
-        //print(`stroke`);
         assert(this.inPath === true);
         this.inPath = false;
-        // Render this.path as stroke
-        delete this.path;
     }
 }
 
 export class Canvas {
-    constructor() {
-        this.width = 0;
-        this.height = 0;
+    constructor(width, height) {
+        this.width = width;
+        this.height = height;
         this.context = new CanvasContext();
     }
     getContext() {

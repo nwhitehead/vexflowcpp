@@ -119,7 +119,6 @@ JSValue cpp_import_script(JSContext *ctx, JSValueConst /*this_val*/, int argc, J
     std::string filename{get_string(ctx, argv[0])};
     JavaScriptRuntime *this_pointer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx));
     std::string contents = read_file(filename);
-    //std::cout << "cpp_import_script len=" << contents.size() << " filename=" << filename << " ctx=" << (void*)ctx << " this_pointer->context=" << (void*)this_pointer->context << std::endl;
     this_pointer->_eval(contents, filename, false, false);
     return JS_UNDEFINED;
 }
@@ -130,7 +129,6 @@ JSValue cpp_get_font_scale(JSContext *ctx, JSValueConst /*this_val*/, int argc, 
     double text_height{get_float64(ctx, argv[1])};
     Renderer &renderer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx))->get_renderer();
     double result = renderer.get_font_scale(fontname, text_height);
-    //std::cout << "cpp_get_font_scale(" << fontname << ", " << text_height << ") = " << result << std::endl;
     return JS_NewFloat64(ctx, result);
 }
 
@@ -139,7 +137,6 @@ JSValue cpp_measure_text(JSContext *ctx, JSValueConst /*this_val*/, int argc, JS
     int character = get_int32(ctx, argv[0]);
     std::string font{get_string(ctx, argv[1])};
     double scale{get_float64(ctx, argv[2])};
-    //std::cout << "cpp_measure_text(" << character << ", " << font << ", " << scale << ")" << std::endl;
     Renderer &renderer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx))->get_renderer();
     CodepointMetrics metrics = renderer.measure_character(character, font, scale);
     JSValue result = JS_NewObject(ctx);
@@ -169,6 +166,17 @@ JSValue cpp_register_font(JSContext *ctx, JSValueConst /*this_val*/, int argc, J
     std::string fontname{get_string(ctx, argv[1])};
     Renderer &renderer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx))->get_renderer();
     renderer.register_font(filename, fontname);
+    return JS_UNDEFINED;
+}
+
+JSValue cpp_resize_canvas(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
+    assert(argc == 2);
+    double width{get_float64(ctx, argv[0])};
+    double height{get_float64(ctx, argv[1])};
+    int width_i = static_cast<int>(width);
+    int height_i = static_cast<int>(height);
+    Renderer &renderer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx))->get_renderer();
+    renderer.get_canvas().resize(width_i, height_i);
     return JS_UNDEFINED;
 }
 
@@ -203,6 +211,7 @@ JavaScriptRuntime::JavaScriptRuntime() {
     JS_SetPropertyStr(context, global, "cpp_print", JS_NewCFunction(context, cpp_print, "cpp_print", 1));
     JS_SetPropertyStr(context, global, "cpp_read_file", JS_NewCFunction(context, cpp_read_file, "cpp_read_file", 1));
     JS_SetPropertyStr(context, global, "cpp_register_font", JS_NewCFunction(context, cpp_register_font, "cpp_register_font", 2));
+    JS_SetPropertyStr(context, global, "cpp_resize_canvas", JS_NewCFunction(context, cpp_resize_canvas, "cpp_resize_canvas", 2));
     JS_FreeValue(context, global);
 }
 

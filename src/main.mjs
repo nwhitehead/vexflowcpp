@@ -2,16 +2,19 @@ import { Canvas } from '../src/vexflow_wrap.mjs';
 
 cpp_register_font('../external/Bravura.otf', 'Bravura');
 
+const width = 800;
+const height = 600;
+
 export async function main() {
 
     cpp_import_script('../external/vexflow-debug.js.js');
 
     const { Factory, EasyScore, System } = window.VexFlow;
 
-    const canvas = new Canvas();
+    const canvas = new Canvas(width, height);
 
     const vf = new Factory({
-        renderer: { elementId: canvas, width: 1024, height: 800, backend: 1 },
+        renderer: { elementId: canvas, width, height, backend: 1 },
     });
 
     const score = vf.EasyScore();

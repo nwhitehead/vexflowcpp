@@ -5,15 +5,18 @@
 #include "stb_image_write.h"
 
 Canvas::Canvas(int width_p, int height_p) : width(width_p), height(height_p), data(width * height) {
-    //std::cout << "Canvas::Canvas" << std::endl;
 }
 
 Canvas::~Canvas() {
-    //std::cout << "Canvas::~Canvas" << std::endl;
+}
+
+void Canvas::resize(int width_p, int height_p) {
+    width = width_p;
+    height = height_p;
+    data = std::vector<uint8_t>(width * height);
 }
 
 void Canvas::blit(int x, int y, uint8_t *src, int w, int h) {
-    //std::cout << "Canvas::blit x=" << x << " y=" << y << std::endl;
     for (int i = 0; i < h; i++) {
         for (int j = 0; j < w; j++) {
             int value = src[j + i * w];
@@ -23,7 +26,6 @@ void Canvas::blit(int x, int y, uint8_t *src, int w, int h) {
 }
 
 void Canvas::fill_rect(double x, double y, double w, double h) {
-    //std::cout << "Canvas::fill_rect" << std::endl;
     int xi = std::round(x);
     int yi = std::round(y);
     int wi = std::round(w);
@@ -80,6 +82,5 @@ void Canvas::debug() {
 }
 
 void Canvas::save(std::string filename) {
-    //std::cout << "Canvas::save" << std::endl;
     stbi_write_png(filename.c_str(), width, height, 1, data.data(), width);
 }
