@@ -13,12 +13,9 @@ export async function main() {
     const canvas = new Canvas();
     
     const vf = new Factory({
-        renderer: { elementId: canvas, width: 500, height: 200, backend: 1 },
+        renderer: { elementId: canvas, width: 1024, height: 800, backend: 1 },
     });
-    
-    //VexFlow.setMusicFont("Bravura");
-    //"Petaluma", "Bravura", "Gonville");
-    
+
     const score = vf.EasyScore();
     const system = vf.System();
     
