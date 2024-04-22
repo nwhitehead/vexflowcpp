@@ -144,6 +144,8 @@ JSValue cpp_measure_text(JSContext *ctx, JSValueConst /*this_val*/, int argc, JS
     CodepointMetrics metrics = renderer.measure_character(character, font, scale);
     JSValue result = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, result, "width", JS_NewFloat64(ctx, metrics.width));
+    JS_SetPropertyStr(ctx, result, "fontBoundingBoxAscent", JS_NewFloat64(ctx, metrics.fontBoundingBoxAscent));
+    JS_SetPropertyStr(ctx, result, "fontBoundingBoxDescent", JS_NewFloat64(ctx, metrics.fontBoundingBoxDescent));
     return result;
 }
 

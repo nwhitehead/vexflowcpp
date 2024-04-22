@@ -71,18 +71,9 @@ globalThis.document = {
                         measureText(txt) {
                             const { font, size } = parseFont(this.font);
                             const scale = cpp_get_font_scale(font, size) * globalFontScale;
-                            print(`measureText(${txt}) fullFont=${this.font} font=${font} size=${size} scale=${scale}`);
+                            //print(`measureText(${txt}) fullFont=${this.font} font=${font} size=${size} scale=${scale}`);
                             let res = cpp_measure_text(txt.codePointAt(0) || 0, font, scale);
-                            print(JSON.stringify(res));
-                            return {
-                                width: 20,
-                                actualBoundingBoxLeft: 20,
-                                actualBoundingBoxRight: 20,
-                                fontBoundingBoxAscent: 20,
-                                fontBoundingBoxDescent: 20,
-                                actualBoundingBoxAscent: 10,
-                                actualBoundingBoxDescent: 10,
-                            }
+                            return res;
                         }
                     };
                 }
@@ -111,7 +102,7 @@ class CanvasContext {
     fillText(txt, x, y) {
         const { font, size } = parseFont(this.font);
         const scale = cpp_get_font_scale(font, size) * globalFontScale;
-        print(`fillText(${txt}, ${x}, ${y}) font=${this.font}`);
+        //print(`fillText(${txt}, ${x}, ${y}) font=${this.font}`);
         cpp_draw_character(txt.codePointAt(0) || 0, x, y, font, scale)
         // Render text, txt x y
     }
@@ -132,7 +123,7 @@ class CanvasContext {
         delete this.path;
     }
     fillRect(x, y, width, height) {
-        print(`fillRect x=${x} y=${y} width=${width} height=${height}`);
+        //print(`fillRect x=${x} y=${y} width=${width} height=${height}`);
         cpp_fill_rect(x, y, width, height);
         // Render: { type: 'fillRect', x, y, width, height })
     }
