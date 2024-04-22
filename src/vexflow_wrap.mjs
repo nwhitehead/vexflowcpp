@@ -8,7 +8,16 @@
 
 cpp_print('hi');
 
+const globalFontScale = 5.5;
+
+
 globalThis.print = cpp_print;
+
+globalThis.assert = function(condition) {
+    if (!condition) {
+        throw "Assertion failed";
+    }
+}
 
 globalThis.console = {
     log(txt) {
@@ -61,7 +70,7 @@ globalThis.document = {
                     return {
                         measureText(txt) {
                             const { font, size } = parseFont(this.font);
-                            const scale = cpp_get_font_scale(font, size);
+                            const scale = cpp_get_font_scale(font, size) * globalFontScale;
                             print(`measureText(${txt}) fullFont=${this.font} font=${font} size=${size} scale=${scale}`);
                             let res = cpp_measure_text(txt.codePointAt(0) || 0, font, scale);
                             print(JSON.stringify(res));
@@ -100,8 +109,10 @@ class CanvasContext {
         return 1;
     }
     fillText(txt, x, y) {
+        const { font, size } = parseFont(this.font);
+        const scale = cpp_get_font_scale(font, size) * globalFontScale;
         print(`fillText(${txt}, ${x}, ${y}) font=${this.font}`);
-        cpp_draw_character(txt.codePointAt(0) || 0, x, y, this.font, this.fontScale)
+        cpp_draw_character(txt.codePointAt(0) || 0, x, y, font, scale)
         // Render text, txt x y
     }
     beginPath() {

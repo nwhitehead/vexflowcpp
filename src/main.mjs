@@ -3,9 +3,6 @@ import { Canvas } from '../src/vexflow_wrap.mjs';
 cpp_register_font('../external/Bravura.otf', 'Bravura');
 //cpp_register_font('../external/EBGaramond-VariableFont_wght.ttf', 'EBGaramond');
 const scale = cpp_get_font_scale('Bravura', 150);
-const scale2 = cpp_get_font_scale('Bravura', 30);
-cpp_draw_character(0xe050, 200, 100, 'Bravura', scale);
-console.log(scale);
 
 export async function main() {
 
