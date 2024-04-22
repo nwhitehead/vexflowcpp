@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <stdexcept>
 #include <vector>
 
 #include "javascript_runtime.h"
@@ -16,18 +17,22 @@ std::string read_file(std::string filename) {
     // I hate C++ with a passion
     std::ostringstream buf;
     std::ifstream input{filename};
+    if (!input) {
+        throw std::runtime_error("Could not open file");
+    }
     buf << input.rdbuf();
     return buf.str();
 }
 
-int main(int /*argc*/, char */*argv*/[]) {
+int main(int argc, char *argv[]) {
     std::cout << "Offline C++ VexFlow render" << std::endl;
 
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " JSFILE" << std::endl;
+        return EXIT_FAILURE;
+    }
+    std::string filename{argv[1]};
     JavaScriptRuntime runtime;
-    runtime.eval(read_file("../external/opensheetmusicdisplay.js"), "opensheetmusicdisplay.js");
-    runtime.set("__MozaVeilSample_xml", read_file("../external/MozaVeilSample.xml"));
-    runtime.eval_await(read_file("../src/main.mjs"), "main.mjs");
-    //runtime.eval_module(std::string((char *)src_vexflow_wrap_mjs, src_vexflow_wrap_mjs_len), "./vexflow_wrap.mjs");
-    runtime.save("out.png");
+    runtime.eval_await(read_file(filename), filename);
     return EXIT_SUCCESS;
 }

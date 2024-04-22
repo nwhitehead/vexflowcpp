@@ -56,7 +56,7 @@ target_link_libraries( ${PROJECT_NAME} PUBLIC quickjs )
 set(GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(PYTHON3 python)
 set(BUNDLED_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/Bravura.otf
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/Lato-Regular.ttf
 )
 add_custom_command(
    OUTPUT ${GENERATED_DIR}/bundle.h

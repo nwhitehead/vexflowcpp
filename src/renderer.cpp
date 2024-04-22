@@ -3,10 +3,10 @@
 #include <iostream>
 #include <stdexcept>
 
-extern unsigned char external_Bravura_otf[];
+extern unsigned char external_Lato_Regular_ttf[];
 
 Renderer::Renderer() : canvas(800, 600) {
-    int success = stbtt_InitFont(&font, external_Bravura_otf, stbtt_GetFontOffsetForIndex(external_Bravura_otf, 0));
+    int success = stbtt_InitFont(&font, external_Lato_Regular_ttf, stbtt_GetFontOffsetForIndex(external_Lato_Regular_ttf, 0));
     if (!success) {
         throw std::runtime_error("Bravura font could not be initialized");
     }
