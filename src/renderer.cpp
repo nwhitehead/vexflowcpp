@@ -27,7 +27,8 @@ double Renderer::get_font_scale(std::string fontname, double pixel_height) {
 }
 
 void Renderer::register_font(std::string filename, std::string fontname) {
-    fonts.emplace(std::make_pair<std::string, Font>{fontname, filename});
+    //fonts.emplace(std::make_pair<std::string, Font>{fontname, filename});
+    fonts.try_emplace(fontname, filename);
 }
 
 void Renderer::draw_character(int x, int y, int character, std::string fontname, double scale) {
