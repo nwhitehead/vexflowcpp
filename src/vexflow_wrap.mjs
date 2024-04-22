@@ -1,17 +1,7 @@
 
-// cpp_draw_character(0xe050, 0, 100);
-
-// cpp_draw_line(100, 0, 0, 300)
-// for (var angle = 0.0; angle < 2.0 * 3.14159265; angle += 0.01) {
-//     cpp_draw_line(100, 100, 100 + Math.cos(angle) * 50, 100 + Math.sin(angle) * 50)
-// }
-
-cpp_print('hi');
-
+// Scale so that 30pt Bravura maps to right size.
+// Not sure why this is needed.
 const globalFontScale = 5.5;
-
-
-globalThis.print = cpp_print;
 
 globalThis.assert = function(condition) {
     if (!condition) {
@@ -19,29 +9,25 @@ globalThis.assert = function(condition) {
     }
 }
 
+globalThis.print = cpp_print;
+
 globalThis.console = {
     log(txt) {
-        print(txt);
+        cpp_print(txt);
     },
     warn(txt) {
-        print(txt);
+        cpp_print(txt);
     },
     error(txt) {
-        print(txt);
+        cpp_print(txt);
     }
 };
 
-globalThis.log = {
-    debug(msg) {
-        print(msg);
-    }
-};
+// Need to have window object so that we get window.VexFlow
+// Should not need any methods (setTimeout etc.)
+globalThis.window = {};
 
-globalThis.window = {
-    addEventListener() {},
-    setTimeout() {},
-};
-
+/// Parse full fontname like "30pt Bravur,Academico" into { font: 'Bravura', size: 30 }
 function parseFont(fontname) {
     if (fontname === undefined) {
         return null;
@@ -60,25 +46,24 @@ function parseFont(fontname) {
 
 globalThis.document = {
     getElementById(id) {
-        print(`getElementById(${id})`);
-        return {}
+        // Should never get here
+        assert(false);
     },
     createElement(t) {
-        if (t === 'canvas') {
-            return {
-                getContext(t) {
-                    return {
-                        measureText(txt) {
-                            const { font, size } = parseFont(this.font);
-                            const scale = cpp_get_font_scale(font, size) * globalFontScale;
-                            //print(`measureText(${txt}) fullFont=${this.font} font=${font} size=${size} scale=${scale}`);
-                            let res = cpp_measure_text(txt.codePointAt(0) || 0, font, scale);
-                            return res;
-                        }
-                    };
-                }
-            };
-        }
+        assert(t === 'canvas');
+        // Canvases created during rendering are for font measuring only.
+        return {
+            getContext(t) {
+                return {
+                    measureText(txt) {
+                        const { font, size } = parseFont(this.font);
+                        const scale = cpp_get_font_scale(font, size) * globalFontScale;
+                        let res = cpp_measure_text(txt.codePointAt(0) || 0, font, scale);
+                        return res;
+                    }
+                };
+            }
+        };
     }
 };
 
@@ -92,7 +77,6 @@ class CanvasContext {
         this.inPath = false;
         // Current path
         this.path = [];
-        this.fontScale = 0.03;
     }
     // Wrapped methods
     getTransform() {
