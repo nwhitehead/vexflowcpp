@@ -13,15 +13,21 @@ Renderer::~Renderer() {
 }
 
 stbtt_fontinfo *Renderer::get_font(std::string fontname) {
-    return &(fonts.find(fontname)->second).font;
+    auto result = fonts.find(fontname);
+    if (result == fonts.end()) {
+        std::cout << "font=" << fontname << std::endl;
+        throw std::runtime_error("Font not found");
+    }
+    return &(result->second).font;
 }
 
 double Renderer::get_font_scale(std::string fontname, double pixel_height) {
-    return stbtt_ScaleForPixelHeight(get_font(fontname), pixel_height);
+    stbtt_fontinfo *f = get_font(fontname);
+    return stbtt_ScaleForPixelHeight(f, pixel_height);
 }
 
 void Renderer::register_font(std::string filename, std::string fontname) {
-    fonts.emplace(std::make_pair(fontname, Font(filename)));
+    fonts.emplace(std::make_pair<std::string, Font>{fontname, filename});
 }
 
 void Renderer::draw_character(int x, int y, int character, std::string fontname, double scale) {

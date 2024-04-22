@@ -129,7 +129,9 @@ JSValue cpp_get_font_scale(JSContext *ctx, JSValueConst /*this_val*/, int argc, 
     std::string fontname{get_string(ctx, argv[0])};
     double text_height{get_float64(ctx, argv[1])};
     Renderer &renderer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx))->get_renderer();
-    return JS_NewFloat64(ctx, renderer.get_font_scale(fontname, text_height));
+    double result = renderer.get_font_scale(fontname, text_height);
+    std::cout << "cpp_get_font_scale(" << fontname << ", " << text_height << ") = " << result << std::endl;
+    return JS_NewFloat64(ctx, result);
 }
 
 JSValue cpp_measure_text(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {

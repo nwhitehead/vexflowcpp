@@ -33,6 +33,22 @@ globalThis.window = {
     setTimeout() {},
 };
 
+function parseFont(fontname) {
+    if (fontname === undefined) {
+        return null;
+    }
+    const parts = fontname.split(',');
+    const part = parts[0];
+    const match = part.match(/^(\d+)pt (.*)/);
+    if (match) {
+        return {
+            font: match[2],
+            size: Number(match[1]),
+        }
+    }
+    return null;
+}
+
 globalThis.document = {
     getElementById(id) {
         print(`getElementById(${id})`);
@@ -44,8 +60,10 @@ globalThis.document = {
                 getContext(t) {
                     return {
                         measureText(txt) {
-                            //print(`measureText(${txt}) len=${txt.length} font=${this.font}`);
-                            let res = cpp_measure_text(txt.codePointAt(0) || 0, this.font);
+                            const { font, size } = parseFont(this.font);
+                            const scale = cpp_get_font_scale(font, size);
+                            print(`measureText(${txt}) fullFont=${this.font} font=${font} size=${size} scale=${scale}`);
+                            let res = cpp_measure_text(txt.codePointAt(0) || 0, font, scale);
                             print(JSON.stringify(res));
                             return {
                                 width: 20,
@@ -74,6 +92,7 @@ class CanvasContext {
         this.inPath = false;
         // Current path
         this.path = [];
+        this.fontScale = 0.03;
     }
     // Wrapped methods
     getTransform() {
@@ -81,8 +100,8 @@ class CanvasContext {
         return 1;
     }
     fillText(txt, x, y) {
-        //print(`fillText(${txt}, ${x}, ${y}) font=${this.font}`);
-        cpp_draw_character(txt.codePointAt(0) || 0, x, y)
+        print(`fillText(${txt}, ${x}, ${y}) font=${this.font}`);
+        cpp_draw_character(txt.codePointAt(0) || 0, x, y, this.font, this.fontScale)
         // Render text, txt x y
     }
     beginPath() {
@@ -136,7 +155,7 @@ class CanvasContext {
     }
 }
 
-class Canvas {
+export class Canvas {
     constructor() {
         this.width = 0;
         this.height = 0;
@@ -151,4 +170,3 @@ class Canvas {
     }
 }
 
-export default {};
