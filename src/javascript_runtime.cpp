@@ -18,19 +18,9 @@
 
 #include "stb_truetype.h"
 #include "canvas.h"
+#include "readfile.h"
 
 namespace {
-
-std::string read_file(std::string filename) {
-    // I hate C++ with a passion
-    std::ostringstream buf;
-    std::ifstream input{filename};
-    if (!input) {
-        throw std::runtime_error("Could not open file");
-    }
-    buf << input.rdbuf();
-    return buf.str();
-}
 
 JSModuleDef *module_loader(JSContext *ctx, const char *module_name, void */*opaque*/) {
     JSModuleDef *m;
@@ -52,8 +42,6 @@ JSModuleDef *module_loader(JSContext *ctx, const char *module_name, void */*opaq
     JS_FreeValue(ctx, func_val);
     return m;
 }
-
-} // namespace anonymous
 
 std::string get_string(JSContext *ctx, JSValueConst &arg) {
     size_t len{};
@@ -90,20 +78,17 @@ double get_float64(JSContext *ctx, JSValueConst &arg) {
     return value;
 }
 
-JSValue cpp_print(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
-    assert(argc == 1);
-    std::string msg{get_string(ctx, argv[0])};
-    std::cout << msg << std::endl;
-    return JS_UNDEFINED;
-}
+} // anonymous namespace
 
 JSValue cpp_draw_character(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
-    assert(argc == 3);
+    assert(argc == 5);
     int character = get_int32(ctx, argv[0]);
     int x = std::round(get_float64(ctx, argv[1]));
     int y = std::round(get_float64(ctx, argv[2]));
+    std::string font = get_string(ctx, argv[3]);
+    double scale = get_float64(ctx, argv[4]);
     Renderer &renderer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx))->get_renderer();
-    renderer.draw_character(x, y, character);
+    renderer.draw_character(x, y, character, font, scale);
     return JS_UNDEFINED;
 }
 
@@ -129,16 +114,42 @@ JSValue cpp_fill_rect(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSVal
     return JS_UNDEFINED;
 }
 
-JSValue cpp_measure_text(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
+JSValue cpp_import_script(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
+    assert(argc == 1);
+    std::string filename{get_string(ctx, argv[0])};
+    JavaScriptRuntime *this_pointer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx));
+    std::string contents = read_file(filename);
+    //std::cout << "cpp_import_script len=" << contents.size() << " filename=" << filename << " ctx=" << (void*)ctx << " this_pointer->context=" << (void*)this_pointer->context << std::endl;
+    this_pointer->_eval(contents, filename, false, false);
+    return JS_UNDEFINED;
+}
+
+JSValue cpp_get_font_scale(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
     assert(argc == 2);
+    std::string fontname{get_string(ctx, argv[0])};
+    double text_height{get_float64(ctx, argv[1])};
+    Renderer &renderer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx))->get_renderer();
+    return JS_NewFloat64(ctx, renderer.get_font_scale(fontname, text_height));
+}
+
+JSValue cpp_measure_text(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
+    assert(argc == 3);
     int character = get_int32(ctx, argv[0]);
     std::string font{get_string(ctx, argv[1])};
-    std::cout << "cpp_measure_text(" << character << ", " << font << ")" << std::endl;
+    double scale{get_float64(ctx, argv[2])};
+    std::cout << "cpp_measure_text(" << character << ", " << font << ", " << scale << ")" << std::endl;
     Renderer &renderer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx))->get_renderer();
-    CodepointMetrics metrics = renderer.measure_character(character);
+    CodepointMetrics metrics = renderer.measure_character(character, font, scale);
     JSValue result = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, result, "width", JS_NewFloat64(ctx, metrics.width));
     return result;
+}
+
+JSValue cpp_print(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
+    assert(argc == 1);
+    std::string msg{get_string(ctx, argv[0])};
+    std::cout << msg << std::endl;
+    return JS_UNDEFINED;
 }
 
 JSValue cpp_read_file(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
@@ -148,13 +159,12 @@ JSValue cpp_read_file(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSVal
     return JS_NewStringLen(ctx, contents.c_str(), contents.size());
 }
 
-JSValue cpp_import_script(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
-    assert(argc == 1);
+JSValue cpp_register_font(JSContext *ctx, JSValueConst /*this_val*/, int argc, JSValueConst *argv) {
+    assert(argc == 2);
     std::string filename{get_string(ctx, argv[0])};
-    JavaScriptRuntime *this_pointer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx));
-    std::string contents = read_file(filename);
-    //std::cout << "cpp_import_script len=" << contents.size() << " filename=" << filename << " ctx=" << (void*)ctx << " this_pointer->context=" << (void*)this_pointer->context << std::endl;
-    this_pointer->_eval(contents, filename, false, false);
+    std::string fontname{get_string(ctx, argv[1])};
+    Renderer &renderer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx))->get_renderer();
+    renderer.register_font(filename, fontname);
     return JS_UNDEFINED;
 }
 
@@ -180,13 +190,15 @@ JavaScriptRuntime::JavaScriptRuntime() {
     JS_SetModuleLoaderFunc(runtime, nullptr, module_loader, nullptr);
     // Register globals
     JSValue global = JS_GetGlobalObject(context);
-    JS_SetPropertyStr(context, global, "cpp_print", JS_NewCFunction(context, cpp_print, "cpp_print", 1));
-    JS_SetPropertyStr(context, global, "cpp_measure_text", JS_NewCFunction(context, cpp_measure_text, "cpp_measure_text", 2));
-    JS_SetPropertyStr(context, global, "cpp_draw_character", JS_NewCFunction(context, cpp_draw_character, "cpp_draw_character", 3));
+    JS_SetPropertyStr(context, global, "cpp_draw_character", JS_NewCFunction(context, cpp_draw_character, "cpp_draw_character", 5));
     JS_SetPropertyStr(context, global, "cpp_draw_line", JS_NewCFunction(context, cpp_draw_line, "cpp_draw_line", 4));
     JS_SetPropertyStr(context, global, "cpp_fill_rect", JS_NewCFunction(context, cpp_fill_rect, "cpp_fill_rect", 4));
+    JS_SetPropertyStr(context, global, "cpp_get_font_scale", JS_NewCFunction(context, cpp_get_font_scale, "cpp_get_font_scale", 2));
     JS_SetPropertyStr(context, global, "cpp_import_script", JS_NewCFunction(context, cpp_import_script, "cpp_import_script", 1));
+    JS_SetPropertyStr(context, global, "cpp_measure_text", JS_NewCFunction(context, cpp_measure_text, "cpp_measure_text", 3));
+    JS_SetPropertyStr(context, global, "cpp_print", JS_NewCFunction(context, cpp_print, "cpp_print", 1));
     JS_SetPropertyStr(context, global, "cpp_read_file", JS_NewCFunction(context, cpp_read_file, "cpp_read_file", 1));
+    JS_SetPropertyStr(context, global, "cpp_register_font", JS_NewCFunction(context, cpp_register_font, "cpp_register_font", 2));
     JS_FreeValue(context, global);
 }
 
@@ -205,7 +217,7 @@ void JavaScriptRuntime::eval_module(std::string code, std::string source_filenam
     _eval(code, source_filename, true, false);
 }
 
-void JavaScriptRuntime::eval_await(std::string code, std::string source_filename) {
+void JavaScriptRuntime::eval_module_await(std::string code, std::string source_filename) {
     std::lock_guard<std::mutex> guard(mutex);
     _eval(code, source_filename, true, true);
 }

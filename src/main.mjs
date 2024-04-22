@@ -1,40 +1,32 @@
- cpp_draw_character(0xe050, 0, 100);
+import _ from '../src/vexflow_wrap.mjs';
 
-import _ from '../src/wrap.mjs';
-import { DOMParser, XMLSerializer } from '../external/xmldom.0.8.10.esm.js';
-//import { opensheetmusicdisplay } from '../external/opensheetmusicdisplay.js';
+cpp_draw_character(0xe050, 0, 100);
 
-globalThis.DOMParser = DOMParser;
+export async function main() {
 
-async function main() {
-    //cpp_import_script('../external/fxparser.min.js.js');
-    cpp_import_script('../external/opensheetmusicdisplay.js');
+    cpp_import_script('../external/vexflow-debug.js.js');
 
-    let osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay("osmdContainer");
-    osmd.setLogLevel('debug');
-    osmd.setOptions({
-        backend: "canvas",
-        drawTitle: true,
+    const VexFlow = window.VexFlow;
+
+    const { Factory } = VexFlow;
+    const vf = new Factory({
+      renderer: { elementId: 'output', width: 500, height: 200 },
     });
-    console.log('ok');
-    const song = cpp_read_file('../external/MozaVeilSample.xml');
-    console.log(song.length);
-    console.log(song.substr(0, 10));
-    console.log(song.substr(-10));
-    const parser = new DOMParser();
-    const parsed = parser.parseFromString(song, 'application/xml');
-    //console.log(parsed.childNodes[0].childNodes.length);
-    const back = new XMLSerializer().serializeToString(parsed);
-    console.log(`Length of serialized xml is ${back.length}`);
-    await osmd.load(song);
-    console.log('Song loaded');
+    
+    const score = vf.EasyScore();
+    const system = vf.System();
+    
+    system
+      .addStave({
+        voices: [
+          score.voice(score.notes('C#5/q, B4, A4, G#4', { stem: 'up' })),
+          score.voice(score.notes('C#4/h, C#4', { stem: 'down' })),
+        ],
+      })
+      .addClef('treble')
+      .addTimeSignature('4/4');
+    
+    vf.draw();
 }
 
-try {
-    await main();
-} catch(e) {
-    console.log('Uncaught exception: ' + e);
-    console.log(e.stack);
-}
-//   osmd
-//     .load("MozaVeilSample.xml")
+await main();

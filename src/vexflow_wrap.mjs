@@ -6,16 +6,7 @@
 //     cpp_draw_line(100, 100, 100 + Math.cos(angle) * 50, 100 + Math.sin(angle) * 50)
 // }
 
-import { main } from "./main.mjs";
-
 cpp_print('hi');
-cpp_print(main);
-
-try {
-    await main();
-} catch(e) {
-    cpp_print('Uncaught exception: ' + e);
-}
 
 globalThis.print = cpp_print;
 
@@ -160,42 +151,4 @@ class Canvas {
     }
 }
 
-class XMLHttpRequest {
-    // Oops, dont' need, can pass XML string directly
-    constructor() {}
-    static DONE = 1
-    overrideMimeType() {}
-    open(method, url) {
-        print(`XMLHttpRequest.open(${method}, ${url})`);
-    }
-    send() {
-        print(`XMLHttpRequest.send()`);
-        this.status = 200;
-        this.readyState = XMLHttpRequest.DONE;
-        this.onreadystatechange();
-    }
-}
-///////////////////////////////////////////////////
-
-var osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay("osmdContainer");
-osmd.setOptions({
-    backend: "canvas",
-    drawTitle: true,
-});
-
-// print(`XML is ${__MozaVeilSample_xml}`);
-
-async function main() {
-    print(osmd.version);
-    osmd.setLogLevel('trace');
-    try {
-        osmd.load(__MozaVeilSample_xml).then(() => {
-            osmd.render();
-        });
-    
-    } catch(e) {
-        console.log(e);
-    }
-}
-
-await main();
+export default {};

@@ -7,22 +7,12 @@
 #include <vector>
 
 #include "javascript_runtime.h"
+#include "readfile.h"
 
 extern unsigned char external_opensheetmusicdisplay_js[];
 extern int external_opensheetmusicdisplay_js_len;
 extern unsigned char src_vexflow_wrap_mjs[];
 extern int src_vexflow_wrap_mjs_len;
-
-std::string read_file(std::string filename) {
-    // I hate C++ with a passion
-    std::ostringstream buf;
-    std::ifstream input{filename};
-    if (!input) {
-        throw std::runtime_error("Could not open file");
-    }
-    buf << input.rdbuf();
-    return buf.str();
-}
 
 int main(int argc, char *argv[]) {
     std::cout << "Offline C++ VexFlow render" << std::endl;
@@ -33,6 +23,7 @@ int main(int argc, char *argv[]) {
     }
     std::string filename{argv[1]};
     JavaScriptRuntime runtime;
-    runtime.eval_await(read_file(filename), filename);
+    runtime.eval_module_await(read_file(filename), filename);
+    runtime.save("out.png");
     return EXIT_SUCCESS;
 }
