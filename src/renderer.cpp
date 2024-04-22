@@ -15,7 +15,7 @@ Renderer::~Renderer() {
 stbtt_fontinfo *Renderer::get_font(std::string fontname) {
     auto result = fonts.find(fontname);
     if (result == fonts.end()) {
-        std::cout << "font=" << fontname << std::endl;
+        std::cerr << "font=" << fontname << std::endl;
         throw std::runtime_error("Font not found");
     }
     return &(result->second).font;

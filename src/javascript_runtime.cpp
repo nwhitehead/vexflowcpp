@@ -130,7 +130,7 @@ JSValue cpp_get_font_scale(JSContext *ctx, JSValueConst /*this_val*/, int argc, 
     double text_height{get_float64(ctx, argv[1])};
     Renderer &renderer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx))->get_renderer();
     double result = renderer.get_font_scale(fontname, text_height);
-    std::cout << "cpp_get_font_scale(" << fontname << ", " << text_height << ") = " << result << std::endl;
+    //std::cout << "cpp_get_font_scale(" << fontname << ", " << text_height << ") = " << result << std::endl;
     return JS_NewFloat64(ctx, result);
 }
 
@@ -139,7 +139,7 @@ JSValue cpp_measure_text(JSContext *ctx, JSValueConst /*this_val*/, int argc, JS
     int character = get_int32(ctx, argv[0]);
     std::string font{get_string(ctx, argv[1])};
     double scale{get_float64(ctx, argv[2])};
-    std::cout << "cpp_measure_text(" << character << ", " << font << ", " << scale << ")" << std::endl;
+    //std::cout << "cpp_measure_text(" << character << ", " << font << ", " << scale << ")" << std::endl;
     Renderer &renderer = static_cast<JavaScriptRuntime*>(JS_GetContextOpaque(ctx))->get_renderer();
     CodepointMetrics metrics = renderer.measure_character(character, font, scale);
     JSValue result = JS_NewObject(ctx);
@@ -259,9 +259,7 @@ JSValue std_await(JSContext *ctx, JSValue obj)
 }
 
 void JavaScriptRuntime::_eval(std::string code, std::string source_filename, bool is_module, bool await) {
-    //std::cout << "Entering _eval for " << source_filename << std::endl;
     JSValue val = JS_Eval(context, code.c_str(), code.size(), source_filename.c_str(), is_module ? JS_EVAL_TYPE_MODULE : 0);
-    //std::cout << "Done _eval for " << source_filename << std::endl;
     if (await) {
         val = std_await(context, val);
     }
