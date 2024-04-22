@@ -124,6 +124,7 @@ export class Canvas {
     constructor(width, height) {
         this.width = width;
         this.height = height;
+        cpp_resize_canvas(width, height);
         this.context = new CanvasContext();
     }
     getContext() {

@@ -2,8 +2,8 @@ import { Canvas } from '../src/vexflow_wrap.mjs';
 
 cpp_register_font('../external/Bravura.otf', 'Bravura');
 
-const width = 800;
-const height = 600;
+const width = 1024;
+const height = 768
 
 export async function main() {
 
@@ -19,7 +19,7 @@ export async function main() {
 
     const score = vf.EasyScore();
     const system = vf.System();
-    
+
     system.addStave({
         voices: [
             score.voice(score.notes('C#5/q, B4, A4, G#4', {stem: 'up'})),
