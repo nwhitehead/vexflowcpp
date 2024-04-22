@@ -1,25 +1,31 @@
-const score = vf.EasyScore();
-const system = vf.System();
+const { Stave, StaveNote, Voice, Formatter } = VF;
 
-system.addStave({
-    voices: [
-        score.voice(score.notes('C#5/q, B4, A4, G#4', {stem: 'up'})),
-        score.voice(score.notes('C#4/h, C#4', {stem: 'down'}))
-    ],
-}).addClef('treble').addTimeSignature('4/4');
+const stave = new Stave(10, 40, 400);
+stave.addClef("treble").addTimeSignature("4/4");
+stave.setContext(context).draw();
 
-system.addStave({
-    voices: [
-        score.voice(score.notes('C#3/q, B2, A2/8, B2, C#3, D3', {clef: 'bass', stem: 'up'})),
-        score.voice(score.notes('C#2/h, C#2', {clef: 'bass', stem: 'down'}))
-    ],
-}).addClef('bass').addTimeSignature('4/4');
-    
-system.addStave({
-    voices: [
-        score.voice(score.notes('C#3/q, B2, A2/8, B2, C#3, D3', {clef: 'bass', stem: 'up'})),
-        score.voice(score.notes('C#2/h, C#2', {clef: 'bass', stem: 'down'}))
-    ],
-}).addClef('bass').addTimeSignature('4/4');
-    
-system.addConnector();
+// Create the notes
+const notes = [
+    // A quarter-note C.
+    new StaveNote({ keys: ["c/4"], duration: "q" }),
+
+    // A quarter-note D.
+    new StaveNote({ keys: ["d/4"], duration: "q" }),
+
+    // A quarter-note rest. Note that the key (b/4) specifies the vertical
+    // position of the rest.
+    new StaveNote({ keys: ["b/4"], duration: "qr" }),
+
+    // A C-Major chord.
+    new StaveNote({ keys: ["c/4", "e/4", "g/4"], duration: "q" }),
+];
+
+// Create a voice in 4/4 and add above notes
+const voice = new Voice({ num_beats: 4, beat_value: 4 });
+voice.addTickables(notes);
+
+// Format and justify the notes to 400 pixels.
+new Formatter().joinVoices([voice]).format([voice], 350);
+
+// Render voice
+voice.draw(context, stave);
