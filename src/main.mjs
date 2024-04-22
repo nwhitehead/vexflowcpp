@@ -1,4 +1,7 @@
 import { Canvas } from '../src/vexflow_wrap.mjs';
+import '../external/vexflow-debug.js.js';
+
+const VF = window.VexFlow;
 
 cpp_register_font('../external/Bravura.otf', 'Bravura');
 
@@ -7,11 +10,6 @@ const height = 768
 
 export async function main() {
 
-    cpp_import_script('../external/vexflow-debug.js.js');
-    const VF = window.VexFlow;
-
-    const { Factory, EasyScore, System } = VF;
-
     const canvas = new Canvas(width, height);
     const ctx = VF.Renderer.buildContext(canvas, 1, width, height);
 
@@ -19,6 +17,7 @@ export async function main() {
     stave.addClef("treble").addTimeSignature("4/4");
     stave.setContext(ctx).draw();
 
+    // const { Factory, EasyScore, System } = VF;
     // const vf = new Factory({
     //     renderer: { elementId: canvas, width, height, backend: 1 },
     // });

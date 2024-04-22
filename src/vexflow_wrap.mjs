@@ -1,7 +1,7 @@
 
 // Scale so that 30pt Bravura maps to right size.
 // Not sure why this is needed.
-const globalFontScale = 5.5;
+const globalFontScale = 5.0;
 
 globalThis.assert = function(condition) {
     if (!condition) {
@@ -27,7 +27,7 @@ globalThis.console = {
 // Should not need any methods (setTimeout etc.)
 globalThis.window = {};
 
-/// Parse full fontname like "30pt Bravur,Academico" into { font: 'Bravura', size: 30 }
+/// Parse full fontname like "30pt Bravura,Academico" into { font: 'Bravura', size: 30 }
 function parseFont(fontname) {
     if (fontname === undefined) {
         return null;

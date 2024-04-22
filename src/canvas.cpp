@@ -1,5 +1,6 @@
 #include "canvas.h"
 
+#include <algorithm>
 #include <iostream>
 
 #include "stb_image_write.h"
@@ -81,6 +82,14 @@ void Canvas::debug() {
     std::cout << "sum=" << sum << std::endl;
 }
 
+uint32_t pack(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    return (r << 0) | (g << 8) | (b << 16) | (a << 24);
+}
 void Canvas::save(std::string filename) {
-    stbi_write_png(filename.c_str(), width, height, 1, data.data(), width);
+    // Convert meaning of (0, 255) from (transparent, opaque) TO (white, black)
+    std::vector<uint32_t> output(data.size());
+    std::transform(data.begin(), data.end(), output.begin(), [](uint8_t value) -> uint32_t {
+        return pack(255 - value, 255 - value, 255 - value, 255);
+    });
+    stbi_write_png(filename.c_str(), width, height, 4, output.data(), width * 4);
 }
