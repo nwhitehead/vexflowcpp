@@ -10,13 +10,15 @@ const height = 768
 
 export async function main() {
 
+    console.log(`arg=${arg}`);
+
     const canvas = new Canvas(width, height);
     const ctx = VF.Renderer.buildContext(canvas, 1, width, height);
 
     // Script does not have lexical scope so can't see the const vf, so expose it globally.
     globalThis.VF = VF;
     globalThis.context = ctx;
-    cpp_import_script('../test/test1.js');
+    cpp_import_script(arg);
 }
 
 await main();

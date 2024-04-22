@@ -196,7 +196,7 @@ JavaScriptRuntime::JavaScriptRuntime() {
         std::cerr << "JavaScriptRuntime::JavaScriptRuntime() Could not create QuickJS context" << std::endl;
         throw new std::runtime_error("Could not create QuickJS runtime");
     }
-    // Opaque data for context is "this", so we can look it up from non-member functions that only have context
+    // Opaque data for context is "this", so we can look up the JavaScriptRuntime from non-member functions that only have context
     JS_SetContextOpaque(context, this);
     // Register module loader
     JS_SetModuleLoaderFunc(runtime, nullptr, module_loader, nullptr);
