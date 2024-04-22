@@ -3,9 +3,9 @@
 // Not sure why this is needed.
 const globalFontScale = 5.0;
 
-globalThis.assert = function(condition) {
+globalThis.assert = function(condition, msg) {
     if (!condition) {
-        throw "Assertion failed";
+        throw "Assertion failed: " + msg;
     }
 }
 
@@ -47,10 +47,25 @@ function parseFont(fontname) {
 globalThis.document = {
     getElementById(id) {
         // Should never get here
-        assert(false);
+        assert(false, "getElementById called");
     },
     createElement(t) {
-        assert(t === 'canvas');
+        if (t === 'span') {
+            let fullFont = '30pt Bravura,Academico';
+            return {
+                style: {
+                    set font(txt) {
+                        console.log(`Set span.style.font=${txt}`);
+                        fullFont = txt;
+                    },
+                    get font() {
+                        console.log(`get span.style.font`);
+                        return parseFont(fullFont);
+                    },
+                },
+            };
+        }
+        assert(t === 'canvas', `Can only create canvas got t=${t}`);
         // Canvases created during rendering are for font measuring only.
         return {
             getContext(t) {
@@ -90,7 +105,10 @@ class CanvasContext {
         this.inPath = true;
     }
     bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y) {
-        assert(false);
+        assert(false, "Bezier curves not implemented yet");
+    }
+    closePath() {
+        // not sure what to do here
     }
     fill() {
         assert(this.inPath === true);
