@@ -1,5 +1,7 @@
 # VexFlowCPP
 
+NOTE: This project is abandoned, superceded by [vexflowrust](https://github.com/nwhitehead/vexflowrust).
+
 This project is a command-line utility to render
 [VexFlow](https://github.com/vexflow/vexflow) scores off-line. It is designed to
 be as lightweight as possible and to support as many platforms as possible. In
